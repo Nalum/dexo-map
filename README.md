@@ -3,11 +3,13 @@
 This project is using data provided by the creator of [DexoWorlds](https://dexoworlds.com) to allow exploring the Galaxy
 Veran Way.
 
+ADA Address: [`addr1qywqmlh8m5kenkgx43075pf2gslp09fc9smkp0f5u507zmqm9ajsamy75llqkcdshhh4apqgnvvzmsswkqrpk2nf0ncsdtj4ay`](./ada-address.pdf)
+
 The below information is taken from [DexoWorlds](https://dexoworlds.com)
 
 # About DexoWorlds
 
-Policy ID: [862cd06c4504de6114a29e0b863751ee84ad455493d43aeeb727d896](https://pool.pm/policy/862cd06c4504de6114a29e0b863751ee84ad455493d43aeeb727d896)
+Policy ID: [`862cd06c4504de6114a29e0b863751ee84ad455493d43aeeb727d896`](https://pool.pm/policy/862cd06c4504de6114a29e0b863751ee84ad455493d43aeeb727d896)
 
 ## What are DexoWorlds?
 
