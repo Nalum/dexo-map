@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<style>
+		html * {
+			margin: 0;
+			padding: 0;
+		}
+
+		body {
+			margin: 10px;
+		}
+
+		#container {
+			width: 900px;
+			margin:0 auto;
+		}
+
+		#map {
+			background-color: #130a38;
+			margin:0 auto;
+		}
+	</style>
+</head>
+
+<body>
+	<div id="container">
+		<label>Enable Sizes</label>
+		<input type="checkbox" id="size" onclick="redraw();" />
+		&nbsp;
+		<label>Enable Luminosity</label>
+		<input type="checkbox" id="alpha" onclick="redraw();" />
+		&nbsp;
+		<label>Enable Regions</label>
+		<input type="checkbox" id="regions" onclick="redraw();" />
+		<br />
+		<label>World</label>
+		<input type="checkbox" id="world" onclick="document.getElementById('star').checked = false;redraw();" />
+		<label>Or Star</label>
+		<input type="checkbox" id="star" checked="true" onclick="document.getElementById('world').checked = false;redraw();" />
+		<input type="number" id="id" onchange="redraw();"/>
+		&nbsp;
+		<button id="reset">Reset</button>
+		<br />
+		<canvas id="map" width="900" height="1000"></canvas>
+	</div>
+
+	<script>
+		const canvas = document.getElementById("map");
+		const ctx = canvas.getContext("2d");
+		const scaleFactor = 1.1;
+		var scale = 50;
+		var translation = 0;
+		var stars = null;
+		var lastX = 0, lastY = 0;
+		var dragStart, dragged;
+		ctx.translate(canvas.width / 2, canvas.height / 2);
+		var maxLums = 0.0, minLums = 0.1;
+
+		var req = new XMLHttpRequest();
+		req.overrideMimeType("application/json");
+		req.open('GET', '/stars', true);
+		req.onreadystatechange = function () {
+			if (req.readyState == 4 && req.status == "200") {
+				stars = JSON.parse(req.responseText);
+				Object.keys(stars).forEach(function(k,i) {
+					if (stars[k].luminosity > maxLums) {
+						maxLums = stars[k].luminosity;
+					}
+				});
+				redraw();
+				var anim = setInterval(function(){
+					console.log("scaling");
+					var as = 0.9877;
+					ctx.scale(as,as);
+					redraw();
+				}, 16);
+				setTimeout(function(){
+					clearInterval(anim);
+				}, 5000);
+			}
+		};
+		req.send(null);
+		
+		function redraw() {
+			ctx.clearRect(-canvas.width*1000, -canvas.width*1000, canvas.width*2000, canvas.width*2000);
+			
+			if (stars !== null) {
+				Object.keys(stars).forEach(function(k,i) {
+					var x = stars[k].radial_distance * Math.sin(-stars[k].longitude*(Math.PI/180));
+					var y = -1*stars[k].radial_distance * Math.cos(stars[k].longitude*(Math.PI/180));
+					var size = 100;//stars[k].radius;
+					var alpha = 100;//stars[k].luminosity;
+
+					if (document.getElementById("size").checked) {
+						size = stars[k].radius*100;
+					}
+
+					if (document.getElementById("alpha").checked) {
+						alpha = stars[k].luminosity/maxLums;
+
+						if (alpha < minLums) {
+							alpha = minLums;
+						}
+					}
+
+					ctx.beginPath();
+
+					switch (stars[k].color.join("_")) {
+						case "blue":
+						ctx.fillStyle = "rgba(0,0,255, " + alpha + ")";
+						break;
+						case "blue_white":
+						ctx.fillStyle = "rgba(100,100,255, " + alpha + ")";
+						break;
+						case "light_orange":
+						ctx.fillStyle = "rgba(247,152,61, " + alpha + ")";
+						break;
+						case "orange_red":
+						ctx.fillStyle = "rgba(255,80,0, " + alpha + ")";
+						break;
+						case "yellow":
+						ctx.fillStyle = "rgba(255,255,0, " + alpha + ")";
+						break;
+						case "yellow_white":
+						ctx.fillStyle = "rgba(239,239,122, " + alpha + ")";
+						break;
+						default:
+						ctx.fillStyle = "rgba(255,255,255, " + alpha + ")";
+					}
+
+					ctx.ellipse(x, y, size, size, Math.PI * 4.0, 0, Math.PI * 2.0, true);
+					ctx.fill();
+
+					if (document.getElementById("regions").checked) {
+						ctx.beginPath();
+						ctx.ellipse(x, y, size+5, size+5, Math.PI * 4.0, 0, Math.PI * 2.0, true);
+
+						switch (stars[k].region) {
+							case "Galactic Bar":
+							ctx.strokeStyle = "rgba(76,114,176,1)";
+							break;
+							case "Hypatian Arm":
+							ctx.strokeStyle = "rgba(85,168,104,1)";
+							break;
+							case "Jacobian Spur":
+							ctx.strokeStyle = "rgba(129,114,179,1)";
+							break;
+							case "Marshan Arm":
+							ctx.strokeStyle = "rgba(221,132,82,1)";
+							break;
+							case "Nether Arm":
+							ctx.strokeStyle = "rgba(196,78,82,1)";
+							break;
+							case "Outerlands":
+							ctx.strokeStyle = "rgba(218,139,195,1)";
+							break;
+							case "Ridean Spur":
+							ctx.strokeStyle = "rgba(147,120,96,1)";
+							break;
+						}
+						ctx.lineWidth = stars[k].n_planets*10;
+						ctx.stroke();
+					}
+				});
+
+				Object.keys(stars).forEach(function(k,i) {
+					var x = stars[k].radial_distance * Math.sin(-stars[k].longitude*(Math.PI/180));
+					var y = -1*stars[k].radial_distance * Math.cos(stars[k].longitude*(Math.PI/180));
+					var size = 100;//stars[k].radius;
+
+					if (document.getElementById("size").checked) {
+						size = stars[k].radius*100;
+					}
+
+					if (document.getElementById("star").checked) {
+						if (document.getElementById("id").value == k) {
+							ctx.beginPath();
+							ctx.ellipse(x, y, size+100, size+100, Math.PI * 4.0, 0, Math.PI * 2.0, true);
+							ctx.ellipse(x, y, size+160, size+160, Math.PI * 4.0, 0, Math.PI * 2.0, true);
+							ctx.ellipse(x, y, size+220, size+220, Math.PI * 4.0, 0, Math.PI * 2.0, true);
+							ctx.strokeStyle = "#0f0";
+							ctx.lineWidth = 50;
+							ctx.stroke();
+						}
+					} else {
+						stars[k].planets.forEach(function(planet) {
+							if (document.getElementById("id").value == planet.planet_id) {
+								ctx.beginPath();
+								ctx.ellipse(x, y, size+100, size+100, Math.PI * 4.0, 0, Math.PI * 2.0, true);
+								ctx.ellipse(x, y, size+160, size+160, Math.PI * 4.0, 0, Math.PI * 2.0, true);
+								ctx.ellipse(x, y, size+220, size+220, Math.PI * 4.0, 0, Math.PI * 2.0, true);
+								ctx.strokeStyle = "#0f0";
+								ctx.lineWidth = 50;
+								ctx.stroke();
+							}
+						});
+					}
+				});
+			}
+		}
+		
+		window.onload = function () {
+			trackTransforms(ctx);
+			redraw();
+
+			canvas.addEventListener(
+				"mousedown",
+				function (evt) {
+					document.body.style.mozUserSelect = document.body.style.webkitUserSelect = document.body.style.userSelect = "none";
+					lastX = evt.offsetX - (canvas.width / 2) || (evt.pageX - (canvas.width / 2)) - canvas.offsetLeft;
+					lastY = evt.offsetY - (canvas.width / 2) || (evt.pageY - (canvas.width / 2)) - canvas.offsetTop;
+					dragStart = ctx.transformedPoint(lastX, lastY);
+					dragged = false;
+				},
+				false
+			);
+
+			canvas.addEventListener(
+				"mousemove",
+				function (evt) {
+					lastX = evt.offsetX - (canvas.width / 2) || (evt.pageX - (canvas.width / 2)) - canvas.offsetLeft;
+					lastY = evt.offsetY - (canvas.width / 2) || (evt.pageY - (canvas.width / 2)) - canvas.offsetTop;
+					dragged = true;
+					if (dragStart) {
+						var pt = ctx.transformedPoint(lastX, lastY);
+						ctx.translate(pt.x - dragStart.x, pt.y - dragStart.y);
+						redraw();
+					}
+				},
+				false
+			);
+
+			canvas.addEventListener(
+				"mouseup",
+				function (evt) {
+					dragStart = null;
+				},
+				false
+			);
+
+			var zoom = function (clicks) {
+				var pt = ctx.transformedPoint(lastX, lastY);
+				ctx.translate(pt.x, pt.y);
+				factor = Math.pow(scaleFactor, clicks);
+				ctx.scale(factor, factor);
+				ctx.translate(-pt.x, -pt.y);
+				redraw();
+			};
+
+			var handleScroll = function (evt) {
+				var delta = evt.wheelDelta
+					? evt.wheelDelta / 40
+					: evt.detail
+						? -evt.detail
+						: 0;
+				if (delta) zoom(delta);
+				return evt.preventDefault() && false;
+			};
+
+			canvas.addEventListener("DOMMouseScroll", handleScroll, false);
+			canvas.addEventListener("mousewheel", handleScroll, false);
+		};
+
+		// Adds ctx.getTransform() - returns an SVGMatrix
+		// Adds ctx.transformedPoint(x,y) - returns an SVGPoint
+		function trackTransforms(ctx) {
+			var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+			var xform = svg.createSVGMatrix();
+			ctx.getTransform = function () {
+				return xform;
+			};
+
+			var savedTransforms = [];
+			var save = ctx.save;
+			ctx.save = function () {
+				savedTransforms.push(xform.translate(0, 0));
+				return save.call(ctx);
+			};
+
+			var restore = ctx.restore;
+			ctx.restore = function () {
+				xform = savedTransforms.pop();
+				return restore.call(ctx);
+			};
+
+			var scale = ctx.scale;
+			ctx.scale = function (sx, sy) {
+				xform = xform.scaleNonUniform(sx, sy);
+				return scale.call(ctx, sx, sy);
+			};
+
+			var rotate = ctx.rotate;
+			ctx.rotate = function (radians) {
+				xform = xform.rotate((radians * 180) / Math.PI);
+				return rotate.call(ctx, radians);
+			};
+
+			var translate = ctx.translate;
+			ctx.translate = function (dx, dy) {
+				xform = xform.translate(dx, dy);
+				return translate.call(ctx, dx, dy);
+			};
+
+			var transform = ctx.transform;
+			ctx.transform = function (a, b, c, d, e, f) {
+				var m2 = svg.createSVGMatrix();
+				m2.a = a;
+				m2.b = b;
+				m2.c = c;
+				m2.d = d;
+				m2.e = e;
+				m2.f = f;
+				xform = xform.multiply(m2);
+				return transform.call(ctx, a, b, c, d, e, f);
+			};
+
+			var setTransform = ctx.setTransform;
+			ctx.setTransform = function (a, b, c, d, e, f) {
+				xform.a = a;
+				xform.b = b;
+				xform.c = c;
+				xform.d = d;
+				xform.e = e;
+				xform.f = f;
+				return setTransform.call(ctx, a, b, c, d, e, f);
+			};
+
+			var pt = svg.createSVGPoint();
+			ctx.transformedPoint = function (x, y) {
+				pt.x = x;
+				pt.y = y;
+				return pt.matrixTransform(xform.inverse());
+			};
+		}
+	</script>
+</body>
+
+</html>
