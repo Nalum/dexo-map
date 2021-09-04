@@ -27,6 +27,11 @@
 
 <body>
 	<div id="container">
+		<h1>Dexo Map</h1>
+		<p>
+			<a href="https://dexoworlds.com" target="_blank">Official Website</a>
+			<a href="https://github.com/nalum/dexo-map" target="_blank">Github Repo</a>
+		</p>
 		<label>Enable Sizes</label>
 		<input type="checkbox" id="size" onclick="redraw();" />
 		&nbsp;
@@ -36,15 +41,18 @@
 		<label>Enable Regions</label>
 		<input type="checkbox" id="regions" onclick="redraw();" />
 		<br />
-		<label>World</label>
-		<input type="checkbox" id="world" onclick="document.getElementById('star').checked = false;redraw();" />
-		<label>Or Star</label>
-		<input type="checkbox" id="star" checked="true" onclick="document.getElementById('world').checked = false;redraw();" />
+		<label>Planet ID</label>
+		<input type="checkbox" id="planet" onclick="document.getElementById('star').checked = false;redraw();" />
+		<label>Or Star ID</label>
+		<input type="checkbox" id="star" checked="true" onclick="document.getElementById('planet').checked = false;redraw();" />
 		<input type="number" id="id" onchange="redraw();"/>
 		&nbsp;
 		<button id="reset">Reset</button>
 		<br />
 		<canvas id="map" width="900" height="1000"></canvas>
+		<p>
+			<a href="https://github.com/Nalum/dexo-map/blob/main/ada-address.pdf" target="_blank">Help Support</a>
+		</p>
 	</div>
 
 	<script>
@@ -72,14 +80,13 @@
 				});
 				redraw();
 				var anim = setInterval(function(){
-					console.log("scaling");
 					var as = 0.9877;
 					ctx.scale(as,as);
 					redraw();
 				}, 16);
 				setTimeout(function(){
 					clearInterval(anim);
-				}, 5000);
+				}, 5300);
 			}
 		};
 		req.send(null);
@@ -107,61 +114,17 @@
 					}
 
 					ctx.beginPath();
-
-					switch (stars[k].color.join("_")) {
-						case "blue":
-						ctx.fillStyle = "rgba(0,0,255, " + alpha + ")";
-						break;
-						case "blue_white":
-						ctx.fillStyle = "rgba(100,100,255, " + alpha + ")";
-						break;
-						case "light_orange":
-						ctx.fillStyle = "rgba(247,152,61, " + alpha + ")";
-						break;
-						case "orange_red":
-						ctx.fillStyle = "rgba(255,80,0, " + alpha + ")";
-						break;
-						case "yellow":
-						ctx.fillStyle = "rgba(255,255,0, " + alpha + ")";
-						break;
-						case "yellow_white":
-						ctx.fillStyle = "rgba(239,239,122, " + alpha + ")";
-						break;
-						default:
-						ctx.fillStyle = "rgba(255,255,255, " + alpha + ")";
-					}
-
+					var color = starColor(stars[k].color.join("_"), alpha);
+					ctx.fillStyle = color;
 					ctx.ellipse(x, y, size, size, Math.PI * 4.0, 0, Math.PI * 2.0, true);
 					ctx.fill();
 
 					if (document.getElementById("regions").checked) {
 						ctx.beginPath();
 						ctx.ellipse(x, y, size+5, size+5, Math.PI * 4.0, 0, Math.PI * 2.0, true);
-
-						switch (stars[k].region) {
-							case "Galactic Bar":
-							ctx.strokeStyle = "rgba(76,114,176,1)";
-							break;
-							case "Hypatian Arm":
-							ctx.strokeStyle = "rgba(85,168,104,1)";
-							break;
-							case "Jacobian Spur":
-							ctx.strokeStyle = "rgba(129,114,179,1)";
-							break;
-							case "Marshan Arm":
-							ctx.strokeStyle = "rgba(221,132,82,1)";
-							break;
-							case "Nether Arm":
-							ctx.strokeStyle = "rgba(196,78,82,1)";
-							break;
-							case "Outerlands":
-							ctx.strokeStyle = "rgba(218,139,195,1)";
-							break;
-							case "Ridean Spur":
-							ctx.strokeStyle = "rgba(147,120,96,1)";
-							break;
-						}
-						ctx.lineWidth = stars[k].n_planets*10;
+						var color = regionColor(stars[k].region);
+						ctx.strokeStyle = color;
+						ctx.lineWidth = 100;
 						ctx.stroke();
 					}
 				});
@@ -175,33 +138,87 @@
 						size = stars[k].radius*100;
 					}
 
-					if (document.getElementById("star").checked) {
-						if (document.getElementById("id").value == k) {
-							ctx.beginPath();
-							ctx.ellipse(x, y, size+100, size+100, Math.PI * 4.0, 0, Math.PI * 2.0, true);
-							ctx.ellipse(x, y, size+160, size+160, Math.PI * 4.0, 0, Math.PI * 2.0, true);
-							ctx.ellipse(x, y, size+220, size+220, Math.PI * 4.0, 0, Math.PI * 2.0, true);
-							ctx.strokeStyle = "#0f0";
-							ctx.lineWidth = 50;
-							ctx.stroke();
-						}
-					} else {
+					if (document.getElementById("planet").checked) {
 						stars[k].planets.forEach(function(planet) {
 							if (document.getElementById("id").value == planet.planet_id) {
-								ctx.beginPath();
-								ctx.ellipse(x, y, size+100, size+100, Math.PI * 4.0, 0, Math.PI * 2.0, true);
-								ctx.ellipse(x, y, size+160, size+160, Math.PI * 4.0, 0, Math.PI * 2.0, true);
-								ctx.ellipse(x, y, size+220, size+220, Math.PI * 4.0, 0, Math.PI * 2.0, true);
-								ctx.strokeStyle = "#0f0";
-								ctx.lineWidth = 50;
-								ctx.stroke();
+								drawFocused(x, y, size, starColor(stars[k].color.join("_"), 1));
 							}
 						});
+					} else {
+						if (document.getElementById("id").value == k) {
+							drawFocused(x, y, size, starColor(stars[k].color.join("_"), 1));
+						}
 					}
 				});
 			}
 		}
+
+		function drawFocused(x, y, size, color) {
+			ctx.beginPath();
+			ctx.ellipse(x, y, size, size, Math.PI * 4.0, 0, Math.PI * 2.0, true);
+			ctx.fillStyle = color;
+			ctx.fill();
+
+			ctx.beginPath();
+			ctx.ellipse(x, y, size+100, size+100, Math.PI * 4.0, 0, Math.PI * 2.0, true);
+			ctx.ellipse(x, y, size+160, size+160, Math.PI * 4.0, 0, Math.PI * 2.0, true);
+			ctx.ellipse(x, y, size+220, size+220, Math.PI * 4.0, 0, Math.PI * 2.0, true);
+			ctx.strokeStyle = "#0f0";
+			ctx.lineWidth = 50;
+			ctx.stroke();
+		}
 		
+		function starColor(color, alpha) {
+			switch (color) {
+				case "blue":
+				return "rgba(0,0,255, " + alpha + ")";
+				break;
+				case "blue_white":
+				return "rgba(100,100,255, " + alpha + ")";
+				break;
+				case "light_orange":
+				return "rgba(247,152,61, " + alpha + ")";
+				break;
+				case "orange_red":
+				return "rgba(255,80,0, " + alpha + ")";
+				break;
+				case "yellow":
+				return "rgba(255,255,0, " + alpha + ")";
+				break;
+				case "yellow_white":
+				return "rgba(239,239,122, " + alpha + ")";
+				break;
+				default:
+				return "rgba(255,255,255, " + alpha + ")";
+			}
+		}
+		
+		function regionColor(region) {
+			switch (region) {
+				case "Galactic Bar":
+				return "rgba(76,114,176,1)";
+				break;
+				case "Hypatian Arm":
+				return "rgba(85,168,104,1)";
+				break;
+				case "Jacobian Spur":
+				return "rgba(129,114,179,1)";
+				break;
+				case "Marshan Arm":
+				return "rgba(221,132,82,1)";
+				break;
+				case "Nether Arm":
+				return "rgba(196,78,82,1)";
+				break;
+				case "Outerlands":
+				return "rgba(218,139,195,1)";
+				break;
+				case "Ridean Spur":
+				return "rgba(147,120,96,1)";
+				break;
+			}
+		}
+
 		window.onload = function () {
 			trackTransforms(ctx);
 			redraw();

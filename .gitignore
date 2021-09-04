@@ -23,5 +23,8 @@
 /vendor/
 /Godeps/
 /bin/
+/packr/
+dexo-map
+main-packr.go
 
 # End of https://www.toptal.com/developers/gitignore/api/go
