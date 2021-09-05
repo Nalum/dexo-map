@@ -82,23 +82,19 @@
 
 	<main>
 		<section id="data">
-			<input type="checkbox" id="size" onclick="redraw();" />
+			<input type="checkbox" id="size" onclick="draw();" />
 			<label onclick="document.getElementById('size').click();">Enable Sizes</label>
 			<br />
-			<input type="checkbox" id="alpha" onclick="redraw();" />
+			<input type="checkbox" id="alpha" onclick="draw();" />
 			<label onclick="document.getElementById('alpha').click();">Enable Luminosity</label>
 			<br />
-			<input type="checkbox" id="regions" onclick="redraw();" />
+			<input type="checkbox" id="regions" onclick="draw();" />
 			<label onclick="document.getElementById('regions').click();">Enable Regions</label>
 			<br />
 			<hr />
-			<input type="checkbox" id="planet" onclick="document.getElementById('star').checked = false;redraw();" />
-			<label onclick="document.getElementById('planet').click();">Planet ID</label>
-			<br />Or<br />
-			<input type="checkbox" id="star" checked="true" onclick="document.getElementById('planet').checked = false;redraw();" />
-			<label onclick="document.getElementById('star').click();">Star ID</label>
+			<label>Star:</label>
 			<br />
-			<input type="number" id="id" onchange="redraw();"/>
+			<select id="star" size="10" multiple onchange="draw();"><option selected value="0">-- Select Star --</option></select>
 			<br />
 			<button id="reset" onclick="reset();">Reset</button>
 		</section>
@@ -114,10 +110,8 @@
 			document.getElementById('size').checked = false;
 			document.getElementById('alpha').checked = false;
 			document.getElementById('regions').checked = false;
-			document.getElementById('star').checked = true;
-			document.getElementById('planet').checked = false;
-			document.getElementById('id').value = '';
-			redraw();
+			document.getElementById('star').value = "0";
+			draw();
 		}
 	</script>
 
@@ -145,11 +139,12 @@
 						maxLums = stars[k].luminosity;
 					}
 				});
-				redraw();
+				populateSelect(stars);
+				draw();
 				var anim = setInterval(function(){
 					var as = 0.9877;
 					ctx.scale(as,as);
-					redraw();
+					draw();
 				}, 16);
 				setTimeout(function(){
 					clearInterval(anim);
@@ -158,81 +153,90 @@
 		};
 		req.send(null);
 		
-		function redraw() {
+		function populateSelect(stars) {
+			var select = document.getElementById("star");
+
+			Object.keys(stars).forEach(function (k,i) {
+				var x = stars[k].radial_distance * Math.sin(-stars[k].longitude*(Math.PI/180));
+				var y = -1*stars[k].radial_distance * Math.cos(stars[k].longitude*(Math.PI/180));
+				var size = RSol;
+
+				if (document.getElementById("size").checked) {
+					size = RSol*stars[k].radius;
+				}
+
+				var option = document.createElement("option");
+				option.value = stars[k].star_id + "|" + x + "|" + y + "|" + size + "|" + starColor(stars[k].color.join("_"), 1);
+				option.innerHTML = stars[k].name + " #" + stars[k].star_id;
+				select.appendChild(option);
+			});
+		}
+
+		function draw() {
 			ctx.clearRect(-canvas.width*1000, -canvas.width*1000, canvas.width*2000, canvas.width*2000);
 			
 			if (stars !== null) {
-				Object.keys(stars).forEach(function(k,i) {
-					var x = stars[k].radial_distance * Math.sin(-stars[k].longitude*(Math.PI/180));
-					var y = -1*stars[k].radial_distance * Math.cos(stars[k].longitude*(Math.PI/180));
-					var size = RSol;
-					var alpha = 1;
-
-					if (document.getElementById("size").checked) {
-						size = RSol*stars[k].radius;
-					}
-
-					if (document.getElementById("alpha").checked) {
-						alpha = stars[k].luminosity/maxLums;
-
-						if (alpha < minLums) {
-							alpha = minLums;
-						}
-					}
-
-					ctx.beginPath();
-					var color = starColor(stars[k].color.join("_"), alpha);
-					ctx.fillStyle = color;
-					ctx.ellipse(x, y, size, size, Math.PI * 4.0, 0, Math.PI * 2.0, true);
-					ctx.fill();
-
-					if (document.getElementById("regions").checked) {
-						ctx.beginPath();
-						ctx.ellipse(x, y, size+5, size+5, Math.PI * 4.0, 0, Math.PI * 2.0, true);
-						var color = regionColor(stars[k].region);
-						ctx.strokeStyle = color;
-						ctx.lineWidth = 100;
-						ctx.stroke();
-					}
-				});
-
-				Object.keys(stars).forEach(function(k,i) {
-					var x = stars[k].radial_distance * Math.sin(-stars[k].longitude*(Math.PI/180));
-					var y = -1*stars[k].radial_distance * Math.cos(stars[k].longitude*(Math.PI/180));
-					var size = RSol;
-
-					if (document.getElementById("size").checked) {
-						size = RSol*stars[k].radius;
-					}
-
-					if (document.getElementById("planet").checked) {
-						stars[k].planets.forEach(function(planet) {
-							if (document.getElementById("id").value == planet.planet_id) {
-								drawFocused(x, y, size, starColor(stars[k].color.join("_"), 1));
-							}
-						});
-					} else {
-						if (document.getElementById("id").value == k) {
-							drawFocused(x, y, size, starColor(stars[k].color.join("_"), 1));
-						}
-					}
-				});
+				paintTheStars();
+				paintFocused();
 			}
 		}
 
-		function drawFocused(x, y, size, color) {
-			ctx.beginPath();
-			ctx.ellipse(x, y, size, size, Math.PI * 4.0, 0, Math.PI * 2.0, true);
-			ctx.fillStyle = color;
-			ctx.fill();
+		function paintTheStars() {
+			Object.keys(stars).forEach(function(k,i) {
+				var x = stars[k].radial_distance * Math.sin(-stars[k].longitude*(Math.PI/180));
+				var y = -1*stars[k].radial_distance * Math.cos(stars[k].longitude*(Math.PI/180));
+				var size = RSol;
+				var alpha = 1;
 
-			ctx.beginPath();
-			ctx.ellipse(x, y, size+100, size+100, Math.PI * 4.0, 0, Math.PI * 2.0, true);
-			ctx.ellipse(x, y, size+160, size+160, Math.PI * 4.0, 0, Math.PI * 2.0, true);
-			ctx.ellipse(x, y, size+220, size+220, Math.PI * 4.0, 0, Math.PI * 2.0, true);
-			ctx.strokeStyle = "#0f0";
-			ctx.lineWidth = 50;
-			ctx.stroke();
+				if (document.getElementById("size").checked) {
+					size = RSol*stars[k].radius;
+				}
+
+				if (document.getElementById("alpha").checked) {
+					alpha = stars[k].luminosity/maxLums;
+
+					if (alpha < minLums) {
+						alpha = minLums;
+					}
+				}
+
+				ctx.beginPath();
+				var color = starColor(stars[k].color.join("_"), alpha);
+				ctx.fillStyle = color;
+				ctx.ellipse(x, y, size, size, Math.PI * 4.0, 0, Math.PI * 2.0, true);
+				ctx.fill();
+
+				if (document.getElementById("regions").checked) {
+					ctx.beginPath();
+					ctx.ellipse(x, y, size+5, size+5, Math.PI * 4.0, 0, Math.PI * 2.0, true);
+					var color = regionColor(stars[k].region);
+					ctx.strokeStyle = color;
+					ctx.lineWidth = 100;
+					ctx.stroke();
+				}
+			});
+		}
+
+		function paintFocused() {
+			var selected = document.getElementById("star").selectedOptions;
+
+			for (i=0; i<selected.length; i++) {
+				var data = selected[i].value.split("|");
+				var x = data[1]*1, y = data[2]*1, size = data[3]*1, color = data[4];
+				console.log(x, y, size, color)
+				ctx.beginPath();
+				ctx.ellipse(x, y, size, size, Math.PI * 4.0, 0, Math.PI * 2.0, true);
+				ctx.fillStyle = color;
+				ctx.fill();
+	
+				ctx.beginPath();
+				ctx.ellipse(x, y, size+100, size+100, Math.PI * 4.0, 0, Math.PI * 2.0, true);
+				ctx.ellipse(x, y, size+160, size+160, Math.PI * 4.0, 0, Math.PI * 2.0, true);
+				ctx.ellipse(x, y, size+220, size+220, Math.PI * 4.0, 0, Math.PI * 2.0, true);
+				ctx.strokeStyle = "#0f0";
+				ctx.lineWidth = 50;
+				ctx.stroke();
+			}
 		}
 		
 		function starColor(color, alpha) {
@@ -288,7 +292,7 @@
 
 		window.onload = function () {
 			trackTransforms(ctx);
-			redraw();
+			draw();
 
 			canvas.addEventListener(
 				"mousedown",
@@ -311,7 +315,7 @@
 					if (dragStart) {
 						var pt = ctx.transformedPoint(lastX, lastY);
 						ctx.translate(pt.x - dragStart.x, pt.y - dragStart.y);
-						redraw();
+						draw();
 					}
 				},
 				false
@@ -331,7 +335,7 @@
 				factor = Math.pow(scaleFactor, clicks);
 				ctx.scale(factor, factor);
 				ctx.translate(-pt.x, -pt.y);
-				redraw();
+				draw();
 			};
 
 			var handleScroll = function (evt) {
