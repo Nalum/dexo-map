@@ -93,10 +93,10 @@
 			<br />
 			<hr />
 			<input type="checkbox" id="planet" onclick="document.getElementById('star').checked = false;redraw();" />
-			<label>Planet ID</label>
+			<label onclick="document.getElementById('planet').click();">Planet ID</label>
 			<br />Or<br />
 			<input type="checkbox" id="star" checked="true" onclick="document.getElementById('planet').checked = false;redraw();" />
-			<label>Star ID</label>
+			<label onclick="document.getElementById('star').click();">Star ID</label>
 			<br />
 			<input type="number" id="id" onchange="redraw();"/>
 			<br />
