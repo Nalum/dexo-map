@@ -13,6 +13,7 @@ import (
 
 func Index(box *packr.Box) func(http.ResponseWriter, *http.Request, httprouter.Params) {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+		log.Println("Index Function Requested")
 		index, err := box.Find("index.html")
 
 		if err != nil {
@@ -21,12 +22,15 @@ func Index(box *packr.Box) func(http.ResponseWriter, *http.Request, httprouter.P
 		}
 
 		w.Header().Add("content-type", "text/html")
+		w.Header().Add("cache-control", "private")
+		w.Header().Add("cache-control", "max-age=300")
 		fmt.Fprintf(w, "%s", index)
 	}
 }
 
 func Stars(box *packr.Box) func(http.ResponseWriter, *http.Request, httprouter.Params) {
 	return func(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+		log.Println("Stars Function Requested")
 		stars, err := box.Find("stars.json")
 
 		if err != nil {
@@ -35,6 +39,8 @@ func Stars(box *packr.Box) func(http.ResponseWriter, *http.Request, httprouter.P
 		}
 
 		w.Header().Add("content-type", "text/json")
+		w.Header().Add("cache-control", "private")
+		w.Header().Add("cache-control", "max-age=300")
 
 		if params.ByName("id") != "" {
 			starMap := map[int]interface{}{}
@@ -74,5 +80,6 @@ func main() {
 	router.GET("/", Index(static))
 	router.GET("/stars", Stars(static))
 	router.GET("/stars/:id", Stars(static))
+	log.Println("Starting HTTP Server")
 	log.Fatal(http.ListenAndServe(":8080", router))
 }

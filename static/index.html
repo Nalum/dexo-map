@@ -11,14 +11,42 @@
 
 		body {
 			margin: 10px;
+			background-color: #002b36;
+			color: #839496;
 		}
 
-		#container {
-			width: 900px;
+		a {
+			color: #859900;
+		}
+
+		header, main, footer {
+			width: 1250px;
 			margin:0 auto;
 		}
 
-		#map {
+		main {
+			margin: 20px auto;
+			display: grid;
+			grid-template-columns: 2;
+			gap: 10px;
+			grid-auto-rows: minmax(100px, auto);
+		}
+
+		main section {
+			background-color: #073642;
+			padding: 5px;
+		}
+
+		main section#data {
+			grid-column: 1;
+		}
+
+		main section#map {
+			grid-column: 2;
+			width: 900px;
+		}
+
+		#galaxy {
 			background-color: #130a38;
 			margin:0 auto;
 		}
@@ -26,39 +54,61 @@
 </head>
 
 <body>
-	<div id="container">
-		<h1>Dexo Map</h1>
+	<header>
+		<h1>DexoWorlds Veran Way Galaxy</h1>
 		<p>
-			<a href="https://dexoworlds.com" target="_blank">Official Website</a>
-			<a href="https://github.com/nalum/dexo-map" target="_blank">Github Repo</a>
-		</p>
-		<label>Enable Sizes</label>
-		<input type="checkbox" id="size" onclick="redraw();" />
-		&nbsp;
-		<label>Enable Luminosity</label>
-		<input type="checkbox" id="alpha" onclick="redraw();" />
-		&nbsp;
-		<label>Enable Regions</label>
-		<input type="checkbox" id="regions" onclick="redraw();" />
-		<br />
-		<label>Planet ID</label>
-		<input type="checkbox" id="planet" onclick="document.getElementById('star').checked = false;redraw();" />
-		<label>Or Star ID</label>
-		<input type="checkbox" id="star" checked="true" onclick="document.getElementById('planet').checked = false;redraw();" />
-		<input type="number" id="id" onchange="redraw();"/>
-		&nbsp;
-		<button id="reset">Reset</button>
-		<br />
-		<canvas id="map" width="900" height="1000"></canvas>
-		<p>
+			<a href="https://dexoworlds.com" target="_blank">Official Website</a> |
+			<a href="https://github.com/nalum/dexo-map" target="_blank">Github Repo</a> |
 			<a href="https://github.com/Nalum/dexo-map/blob/main/ada-address.pdf" target="_blank">Help Support</a>
 		</p>
-	</div>
+	</header>
+
+	<main>
+		<section id="data">
+			<input type="checkbox" id="size" onclick="redraw();" />
+			<label onclick="document.getElementById('size').click();">Enable Sizes</label>
+			<br />
+			<input type="checkbox" id="alpha" onclick="redraw();" />
+			<label onclick="document.getElementById('alpha').click();">Enable Luminosity</label>
+			<br />
+			<input type="checkbox" id="regions" onclick="redraw();" />
+			<label onclick="document.getElementById('regions').click();">Enable Regions</label>
+			<br />
+			<hr />
+			<input type="checkbox" id="planet" onclick="document.getElementById('star').checked = false;redraw();" />
+			<label>Planet ID</label>
+			<br />Or<br />
+			<input type="checkbox" id="star" checked="true" onclick="document.getElementById('planet').checked = false;redraw();" />
+			<label>Star ID</label>
+			<br />
+			<input type="number" id="id" onchange="redraw();"/>
+			<br />
+			<button id="reset" onclick="reset();">Reset</button>
+		</section>
+		<section id="map"><canvas id="galaxy" width="900" height="1000"></canvas></section>
+	</main>
+
+	<footer>
+		<p>If you have any issues or requests please add an issue to the <a href="https://github.com/nalum/dexo-map" target="_blank">Github Repo</a>, thank you.</p>
+	</footer>
 
 	<script>
-		const canvas = document.getElementById("map");
+		function reset() {
+			document.getElementById('size').checked = false;
+			document.getElementById('alpha').checked = false;
+			document.getElementById('regions').checked = false;
+			document.getElementById('star').checked = true;
+			document.getElementById('planet').checked = false;
+			document.getElementById('id').value = '';
+			redraw();
+		}
+	</script>
+
+	<script>
+		const canvas = document.getElementById("galaxy");
 		const ctx = canvas.getContext("2d");
 		const scaleFactor = 1.1;
+		const RSol = 100;
 		var scale = 50;
 		var translation = 0;
 		var stars = null;
@@ -98,11 +148,11 @@
 				Object.keys(stars).forEach(function(k,i) {
 					var x = stars[k].radial_distance * Math.sin(-stars[k].longitude*(Math.PI/180));
 					var y = -1*stars[k].radial_distance * Math.cos(stars[k].longitude*(Math.PI/180));
-					var size = 100;//stars[k].radius;
-					var alpha = 100;//stars[k].luminosity;
+					var size = RSol;
+					var alpha = 1;
 
 					if (document.getElementById("size").checked) {
-						size = stars[k].radius*100;
+						size = RSol*stars[k].radius;
 					}
 
 					if (document.getElementById("alpha").checked) {
@@ -132,10 +182,10 @@
 				Object.keys(stars).forEach(function(k,i) {
 					var x = stars[k].radial_distance * Math.sin(-stars[k].longitude*(Math.PI/180));
 					var y = -1*stars[k].radial_distance * Math.cos(stars[k].longitude*(Math.PI/180));
-					var size = 100;//stars[k].radius;
+					var size = RSol;
 
 					if (document.getElementById("size").checked) {
-						size = stars[k].radius*100;
+						size = RSol*stars[k].radius;
 					}
 
 					if (document.getElementById("planet").checked) {
