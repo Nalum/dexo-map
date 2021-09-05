@@ -14,7 +14,7 @@ import (
 func Index(box *packr.Box) func(http.ResponseWriter, *http.Request, httprouter.Params) {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		log.Println("Index Function Requested")
-		index, err := box.Find("index.html")
+		file, err := box.Find("index.html")
 
 		if err != nil {
 			fmt.Println(err)
@@ -24,14 +24,31 @@ func Index(box *packr.Box) func(http.ResponseWriter, *http.Request, httprouter.P
 		w.Header().Add("content-type", "text/html")
 		w.Header().Add("cache-control", "private")
 		w.Header().Add("cache-control", "max-age=300")
-		fmt.Fprintf(w, "%s", index)
+		fmt.Fprintf(w, "%s", file)
+	}
+}
+
+func Rocket(box *packr.Box) func(http.ResponseWriter, *http.Request, httprouter.Params) {
+	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+		log.Println("Rocket Function Requested")
+		file, err := box.Find("rocket.webp")
+
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		w.Header().Add("content-type", "image/webp")
+		w.Header().Add("cache-control", "private")
+		w.Header().Add("cache-control", "max-age=300")
+		fmt.Fprintf(w, "%s", file)
 	}
 }
 
 func Stars(box *packr.Box) func(http.ResponseWriter, *http.Request, httprouter.Params) {
 	return func(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 		log.Println("Stars Function Requested")
-		stars, err := box.Find("stars.json")
+		file, err := box.Find("stars.json")
 
 		if err != nil {
 			fmt.Println(err)
@@ -51,7 +68,7 @@ func Stars(box *packr.Box) func(http.ResponseWriter, *http.Request, httprouter.P
 				return
 			}
 
-			err = json.Unmarshal(stars, &starMap)
+			err = json.Unmarshal(file, &starMap)
 
 			if err != nil {
 				fmt.Println(err)
@@ -69,7 +86,7 @@ func Stars(box *packr.Box) func(http.ResponseWriter, *http.Request, httprouter.P
 
 			fmt.Fprintf(w, "%s", respJSON)
 		} else {
-			fmt.Fprintf(w, "%s", stars)
+			fmt.Fprintf(w, "%s", file)
 		}
 	}
 }
@@ -78,6 +95,7 @@ func main() {
 	static := packr.New("static", "./static")
 	router := httprouter.New()
 	router.GET("/", Index(static))
+	router.GET("/rocket", Rocket(static))
 	router.GET("/stars", Stars(static))
 	router.GET("/stars/:id", Stars(static))
 	log.Println("Starting HTTP Server")
