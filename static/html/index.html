@@ -221,21 +221,22 @@
 			var selected = document.getElementById("star").selectedOptions;
 
 			for (i=0; i<selected.length; i++) {
-				var data = selected[i].value.split("|");
-				var x = data[1]*1, y = data[2]*1, size = data[3]*1, color = data[4];
-				console.log(x, y, size, color)
-				ctx.beginPath();
-				ctx.ellipse(x, y, size, size, Math.PI * 4.0, 0, Math.PI * 2.0, true);
-				ctx.fillStyle = color;
-				ctx.fill();
-	
-				ctx.beginPath();
-				ctx.ellipse(x, y, size+100, size+100, Math.PI * 4.0, 0, Math.PI * 2.0, true);
-				ctx.ellipse(x, y, size+160, size+160, Math.PI * 4.0, 0, Math.PI * 2.0, true);
-				ctx.ellipse(x, y, size+220, size+220, Math.PI * 4.0, 0, Math.PI * 2.0, true);
-				ctx.strokeStyle = "#0f0";
-				ctx.lineWidth = 50;
-				ctx.stroke();
+				if (selected[i].value != "0") {
+					var data = selected[i].value.split("|");
+					var x = data[1]*1, y = data[2]*1, size = data[3]*1, color = data[4];
+					ctx.beginPath();
+					ctx.ellipse(x, y, size, size, Math.PI * 4.0, 0, Math.PI * 2.0, true);
+					ctx.fillStyle = color;
+					ctx.fill();
+		
+					ctx.beginPath();
+					ctx.ellipse(x, y, size+100, size+100, Math.PI * 4.0, 0, Math.PI * 2.0, true);
+					ctx.ellipse(x, y, size+160, size+160, Math.PI * 4.0, 0, Math.PI * 2.0, true);
+					ctx.ellipse(x, y, size+220, size+220, Math.PI * 4.0, 0, Math.PI * 2.0, true);
+					ctx.strokeStyle = "#0f0";
+					ctx.lineWidth = 50;
+					ctx.stroke();
+				}
 			}
 		}
 		
