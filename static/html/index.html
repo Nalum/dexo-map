@@ -3,6 +3,8 @@
 
 <head>
 	<meta charset="UTF-8">
+	<title>DexoWorlds Veran Way Galaxy - Map</title>
+	<link rel="shortcut icon" type="image/x-icon" href="/static/images/favicon.ico"/>
 	<style>
 		html * {
 			margin: 0;
@@ -82,20 +84,25 @@
 
 	<main>
 		<section id="data">
-			<input type="checkbox" id="size" onclick="draw();" />
-			<label onclick="document.getElementById('size').click();">Enable Sizes</label>
+			<input type="checkbox" id="size" name="size" onclick="draw();" />
+			<label for="size">Enable Sizes</label>
 			<br />
-			<input type="checkbox" id="alpha" onclick="draw();" />
-			<label onclick="document.getElementById('alpha').click();">Enable Luminosity</label>
+			<input type="checkbox" id="alpha" name="alpha" onclick="draw();" />
+			<label for="alpha">Enable Luminosity</label>
 			<br />
-			<input type="checkbox" id="regions" onclick="draw();" />
-			<label onclick="document.getElementById('regions').click();">Enable Regions</label>
+			<input type="checkbox" id="regions" name="regions" onclick="draw();" />
+			<label for="regions">Enable Regions</label>
 			<br />
 			<hr />
-			<label>Star:</label>
+			<label for="star">Star:</label>
 			<br />
-			<select id="star" size="10" multiple onchange="draw();"><option selected value="0">-- Select Star --</option></select>
+			<select id="star" name="star" size="10" multiple onchange="draw();"><option selected value="0">-- Select Star --</option></select>
 			<br />
+			<label for="stake-address">Cardano Stake Address:</label>
+			<input type="text" id="stake-address" name="stake-address" value="stake1uydj7egwaj020lstvxctmm67ssyfkxpdcg8tqpsm9f5heug8n0gdz" />
+			<button id="fetch-dexo" onclick="getStakeDexo(document.getElementById('stake-address').value);">Fetch</button>
+			<br />
+			<hr />
 			<button id="reset" onclick="reset();">Reset</button>
 		</section>
 		<section id="map"><canvas id="galaxy" width="900" height="1000"></canvas></section>
@@ -111,6 +118,8 @@
 			document.getElementById('alpha').checked = false;
 			document.getElementById('regions').checked = false;
 			document.getElementById('star').value = "0";
+			document.getElementById('stake-address').value = "stake1uydj7egwaj020lstvxctmm67ssyfkxpdcg8tqpsm9f5heug8n0gdz";
+			stakeStars = null;
 			draw();
 		}
 	</script>
@@ -123,6 +132,7 @@
 		var scale = 50;
 		var translation = 0;
 		var stars = null;
+		var stakeStars = null;
 		var lastX = 0, lastY = 0;
 		var dragStart, dragged;
 		ctx.translate(canvas.width / 2, canvas.height / 2);
@@ -153,6 +163,19 @@
 		};
 		req.send(null);
 		
+		function getStakeDexo(stakeAddress) {
+			var req = new XMLHttpRequest();
+			req.overrideMimeType("application/json");
+			req.open('GET', '/stake/'+stakeAddress, true);
+			req.onreadystatechange = function () {
+				if (req.readyState == 4 && req.status == "200") {
+					stakeStars = JSON.parse(req.responseText);
+					draw();
+				}
+			};
+			req.send(null);
+		}
+
 		function populateSelect(stars) {
 			var select = document.getElementById("star");
 
@@ -224,6 +247,33 @@
 				if (selected[i].value != "0") {
 					var data = selected[i].value.split("|");
 					var x = data[1]*1, y = data[2]*1, size = data[3]*1, color = data[4];
+					ctx.beginPath();
+					ctx.ellipse(x, y, size, size, Math.PI * 4.0, 0, Math.PI * 2.0, true);
+					ctx.fillStyle = color;
+					ctx.fill();
+		
+					ctx.beginPath();
+					ctx.ellipse(x, y, size+100, size+100, Math.PI * 4.0, 0, Math.PI * 2.0, true);
+					ctx.ellipse(x, y, size+160, size+160, Math.PI * 4.0, 0, Math.PI * 2.0, true);
+					ctx.ellipse(x, y, size+220, size+220, Math.PI * 4.0, 0, Math.PI * 2.0, true);
+					ctx.strokeStyle = "#0f0";
+					ctx.lineWidth = 50;
+					ctx.stroke();
+				}
+			}
+
+			if (stakeStars !== null) {
+				for (i=0; i<stakeStars.length; i++) {
+					var x = stakeStars[i].radial_distance * Math.sin(-stakeStars[i].longitude*(Math.PI/180));
+					var y = -1*stakeStars[i].radial_distance * Math.cos(stakeStars[i].longitude*(Math.PI/180));
+					var size = RSol;
+					var alpha = 1;
+					var color = starColor(stakeStars[i].color.join("_"), alpha);
+
+					if (document.getElementById("size").checked) {
+						size = RSol*stakeStars[i].radius;
+					}
+
 					ctx.beginPath();
 					ctx.ellipse(x, y, size, size, Math.PI * 4.0, 0, Math.PI * 2.0, true);
 					ctx.fillStyle = color;
