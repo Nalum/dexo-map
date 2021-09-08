@@ -29,6 +29,11 @@
 			padding: 0;
 		}
 
+		::selection, ::-moz-selection {
+			color: #859900;
+			background-color: #002b36;
+		}
+
 		body {
 			margin: 10px;
 			background-color: #002b36;
@@ -89,6 +94,13 @@
 			padding: 2px 4px;
 			cursor: pointer;
 			font-weight: bolder;
+			width: 88px;
+		}
+
+		main section#data button:disabled {
+			background-color: #002b36;
+			color: #dc322f;
+			cursor: wait;
 		}
 
 		main section#data select {
@@ -109,8 +121,13 @@
 			margin: 2px 0px;
 		}
 
+		main section#data input#stake-address {
+			width: 210px;
+		}
+
 		main section#data select option {
 			background-color: #073642;
+			cursor: pointer;
 		}
 
 		main section#map {
@@ -138,6 +155,7 @@
 		main section#map canvas#galaxy {
 			background-color: #00121D;
 			margin: 0 auto;
+			cursor: grab;
 		}
 	</style>
 </head>
@@ -266,17 +284,12 @@
 		function getStakeDexo(stakeAddress) {
 			var button = document.getElementById("fetch-dexo")
 			button.disabled = true;
-
-			var intervalID = setInterval(function () {
-				i = ++i % 4;
-				button.innerHTML = "Loading" + Array(i + 1).join(".");
-			}, 800);
+			button.innerHTML = "- Loading -";
 
 			var req = new XMLHttpRequest();
 			req.overrideMimeType("application/json");
 			req.open('GET', '/stake/' + stakeAddress, true);
 			req.onreadystatechange = function () {
-				clearInterval(intervalID);
 				button.innerHTML = "Fetch";
 				button.disabled = false;
 
