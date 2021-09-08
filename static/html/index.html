@@ -4,8 +4,26 @@
 <head>
 	<meta charset="UTF-8">
 	<title>DexoWorlds Veran Way Galaxy - Map</title>
-	<link rel="shortcut icon" type="image/x-icon" href="/static/images/favicon.ico"/>
-	<style>
+	<link rel="shortcut icon" type="image/x-icon" href="/static/images/favicon.ico" />
+	<style type="text/css">
+		/**
+		$base03:    #002b36;
+		$base02:    #073642;
+		$base01:    #586e75;
+		$base00:    #657b83;
+		$base0:     #839496;
+		$base1:     #93a1a1;
+		$base2:     #eee8d5;
+		$base3:     #fdf6e3;
+		$yellow:    #b58900;
+		$orange:    #cb4b16;
+		$red:       #dc322f;
+		$magenta:   #d33682;
+		$violet:    #6c71c4;
+		$blue:      #268bd2;
+		$cyan:      #2aa198;
+		$green:     #859900;
+		**/
 		html * {
 			margin: 0;
 			padding: 0;
@@ -21,13 +39,21 @@
 			color: #859900;
 		}
 
-		header, main, footer {
+		header,
+		main,
+		footer {
 			width: 1250px;
-			margin:0 auto;
+			margin: 0 auto;
+		}
+
+		header section,
+		footer section {
+			background-color: #073642;
+			padding: 5px;
 		}
 
 		main {
-			margin: 20px auto;
+			margin: 10px auto;
 			display: grid;
 			grid-template-columns: 2;
 			gap: 10px;
@@ -41,6 +67,53 @@
 
 		main section#data {
 			grid-column: 1;
+		}
+
+		main section#data hr {
+			margin: 10px 0px;
+			border: 2px solid #002b36;
+		}
+
+		main section#data h1 {
+			text-align: center;
+		}
+
+		main section#data p {
+			margin: 10px 0px;
+		}
+
+		main section#data button {
+			background-color: #073642;
+			border: 4px solid #002b36;
+			color: #859900;
+			padding: 2px 4px;
+			cursor: pointer;
+		}
+
+		main section#data button {
+			background-color: #073642;
+			border: 4px solid #002b36;
+			color: #859900;
+			padding: 2px 4px;
+			cursor: pointer;
+		}
+
+		main section#data select {
+			width: 100%;
+		}
+
+		main section#data select,
+		main section#data input {
+			background-color: #002b36;
+			border: 4px solid #002b36;
+			color: #859900;
+		}
+
+		main section#data select option,
+		main section#data input {
+			background-color: #073642;
+			padding: 2px 4px;
+			margin: 2px 0px;
 		}
 
 		main section#map {
@@ -67,23 +140,40 @@
 
 		#galaxy {
 			background-color: #130a38;
-			margin:0 auto;
+			margin: 0 auto;
 		}
 	</style>
 </head>
 
 <body>
 	<header>
-		<h1>DexoWorlds Veran Way Galaxy</h1>
-		<p>
-			<a href="https://dexoworlds.com" target="_blank">Official Website</a> |
-			<a href="https://github.com/nalum/dexo-map" target="_blank">Github Repo</a> |
-			<a href="https://github.com/Nalum/dexo-map/blob/main/ada-address.pdf" target="_blank">Help Support</a>
-		</p>
+		<section>
+			<h1>DexoWorlds Veran Way Galaxy</h1>
+			<p>
+				<a href="https://dexoworlds.com" target="_blank">Official Website</a> |
+				<a href="https://github.com/nalum/dexo-map" target="_blank">Github Repo</a> |
+				<a href="https://github.com/Nalum/dexo-map/blob/main/ada-address.pdf" target="_blank">Help Support</a>
+			</p>
+		</section>
 	</header>
 
 	<main>
 		<section id="data">
+			<h1>HOW TO</h1>
+			<hr />
+			<p>Use the checkboxes below to enable the different options.</p>
+			<p>
+				The Star field allows you to manually select one or more stars to draw focus around.
+				Simply CTRL (CMD on Mac, I assume) click each star you would like to focus on.
+			</p>
+			<p>
+				Enter your Cardano Stake Address in the input field and click the Fetch button
+				to have your data fetched and displayed on the map.
+			</p>
+			<p>Finally the reset button will reset all options to the defaults.</p>
+			<hr />
+			<h1>CONFIGURE</h1>
+			<hr />
 			<input type="checkbox" id="size" name="size" onclick="draw();" />
 			<label for="size">Enable Sizes</label>
 			<br />
@@ -96,10 +186,14 @@
 			<hr />
 			<label for="star">Star:</label>
 			<br />
-			<select id="star" name="star" size="10" multiple onchange="draw();"><option selected value="0">-- Select Star --</option></select>
+			<select id="star" name="star" size="10" multiple onchange="draw();">
+				<option selected value="0">-- Select Star --</option>
+			</select>
 			<br />
+			<hr />
 			<label for="stake-address">Cardano Stake Address:</label>
-			<input type="text" id="stake-address" name="stake-address" value="stake1uydj7egwaj020lstvxctmm67ssyfkxpdcg8tqpsm9f5heug8n0gdz" />
+			<input type="text" id="stake-address" name="stake-address"
+				value="stake1uydj7egwaj020lstvxctmm67ssyfkxpdcg8tqpsm9f5heug8n0gdz" />
 			<button id="fetch-dexo" onclick="getStakeDexo(document.getElementById('stake-address').value);">Fetch</button>
 			<br />
 			<hr />
@@ -109,7 +203,10 @@
 	</main>
 
 	<footer>
-		<p>If you have any issues or requests please add an issue to the <a href="https://github.com/nalum/dexo-map" target="_blank">Github Repo</a>, thank you.</p>
+		<section>
+			<p>If you have any issues or requests please add an issue to the <a href="https://github.com/nalum/dexo-map"
+					target="_blank">Github Repo</a>, thank you.</p>
+		</section>
 	</footer>
 
 	<script>
@@ -122,9 +219,7 @@
 			stakeStars = null;
 			draw();
 		}
-	</script>
 
-	<script>
 		const canvas = document.getElementById("galaxy");
 		const ctx = canvas.getContext("2d");
 		const scaleFactor = 1.1;
@@ -144,37 +239,37 @@
 		req.onreadystatechange = function () {
 			if (req.readyState == 4 && req.status == "200") {
 				stars = JSON.parse(req.responseText);
-				Object.keys(stars).forEach(function(k,i) {
+				Object.keys(stars).forEach(function (k, i) {
 					if (stars[k].luminosity > maxLums) {
 						maxLums = stars[k].luminosity;
 					}
 				});
 				populateSelect(stars);
 				draw();
-				var anim = setInterval(function(){
+				var anim = setInterval(function () {
 					var as = 0.9877;
-					ctx.scale(as,as);
+					ctx.scale(as, as);
 					draw();
 				}, 16);
-				setTimeout(function(){
+				setTimeout(function () {
 					clearInterval(anim);
 				}, 5300);
 			}
 		};
 		req.send(null);
-		
+
 		function getStakeDexo(stakeAddress) {
 			var button = document.getElementById("fetch-dexo")
 			button.disabled = true;
-			
-			var intervalID = setInterval(function(){
+
+			var intervalID = setInterval(function () {
 				i = ++i % 4;
-				button.innerHTML = "Loading" + Array(i+1).join(".");
+				button.innerHTML = "Loading" + Array(i + 1).join(".");
 			}, 800);
 
 			var req = new XMLHttpRequest();
 			req.overrideMimeType("application/json");
-			req.open('GET', '/stake/'+stakeAddress, true);
+			req.open('GET', '/stake/' + stakeAddress, true);
 			req.onreadystatechange = function () {
 				clearInterval(intervalID);
 				button.innerHTML = "Fetch";
@@ -191,13 +286,13 @@
 		function populateSelect(stars) {
 			var select = document.getElementById("star");
 
-			Object.keys(stars).forEach(function (k,i) {
-				var x = stars[k].radial_distance * Math.sin(-stars[k].longitude*(Math.PI/180));
-				var y = -1*stars[k].radial_distance * Math.cos(stars[k].longitude*(Math.PI/180));
+			Object.keys(stars).forEach(function (k, i) {
+				var x = stars[k].radial_distance * Math.sin(-stars[k].longitude * (Math.PI / 180));
+				var y = -1 * stars[k].radial_distance * Math.cos(stars[k].longitude * (Math.PI / 180));
 				var size = RSol;
 
 				if (document.getElementById("size").checked) {
-					size = RSol*stars[k].radius;
+					size = RSol * stars[k].radius;
 				}
 
 				var option = document.createElement("option");
@@ -208,8 +303,8 @@
 		}
 
 		function draw() {
-			ctx.clearRect(-canvas.width*1000, -canvas.width*1000, canvas.width*2000, canvas.width*2000);
-			
+			ctx.clearRect(-canvas.width * 1000, -canvas.width * 1000, canvas.width * 2000, canvas.width * 2000);
+
 			if (stars !== null) {
 				paintTheStars();
 				paintFocused();
@@ -217,18 +312,18 @@
 		}
 
 		function paintTheStars() {
-			Object.keys(stars).forEach(function(k,i) {
-				var x = stars[k].radial_distance * Math.sin(-stars[k].longitude*(Math.PI/180));
-				var y = -1*stars[k].radial_distance * Math.cos(stars[k].longitude*(Math.PI/180));
+			Object.keys(stars).forEach(function (k, i) {
+				var x = stars[k].radial_distance * Math.sin(-stars[k].longitude * (Math.PI / 180));
+				var y = -1 * stars[k].radial_distance * Math.cos(stars[k].longitude * (Math.PI / 180));
 				var size = RSol;
 				var alpha = 1;
 
 				if (document.getElementById("size").checked) {
-					size = RSol*stars[k].radius;
+					size = RSol * stars[k].radius;
 				}
 
 				if (document.getElementById("alpha").checked) {
-					alpha = stars[k].luminosity/maxLums;
+					alpha = stars[k].luminosity / maxLums;
 
 					if (alpha < minLums) {
 						alpha = minLums;
@@ -243,7 +338,7 @@
 
 				if (document.getElementById("regions").checked) {
 					ctx.beginPath();
-					ctx.ellipse(x, y, size+5, size+5, Math.PI * 4.0, 0, Math.PI * 2.0, true);
+					ctx.ellipse(x, y, size + 5, size + 5, Math.PI * 4.0, 0, Math.PI * 2.0, true);
 					var color = regionColor(stars[k].region);
 					ctx.strokeStyle = color;
 					ctx.lineWidth = 100;
@@ -255,19 +350,19 @@
 		function paintFocused() {
 			var selected = document.getElementById("star").selectedOptions;
 
-			for (i=0; i<selected.length; i++) {
+			for (i = 0; i < selected.length; i++) {
 				if (selected[i].value != "0") {
 					var data = selected[i].value.split("|");
-					var x = data[1]*1, y = data[2]*1, size = data[3]*1, color = data[4];
+					var x = data[1] * 1, y = data[2] * 1, size = data[3] * 1, color = data[4];
 					ctx.beginPath();
 					ctx.ellipse(x, y, size, size, Math.PI * 4.0, 0, Math.PI * 2.0, true);
 					ctx.fillStyle = color;
 					ctx.fill();
-		
+
 					ctx.beginPath();
-					ctx.ellipse(x, y, size+100, size+100, Math.PI * 4.0, 0, Math.PI * 2.0, true);
-					ctx.ellipse(x, y, size+160, size+160, Math.PI * 4.0, 0, Math.PI * 2.0, true);
-					ctx.ellipse(x, y, size+220, size+220, Math.PI * 4.0, 0, Math.PI * 2.0, true);
+					ctx.ellipse(x, y, size + 100, size + 100, Math.PI * 4.0, 0, Math.PI * 2.0, true);
+					ctx.ellipse(x, y, size + 160, size + 160, Math.PI * 4.0, 0, Math.PI * 2.0, true);
+					ctx.ellipse(x, y, size + 220, size + 220, Math.PI * 4.0, 0, Math.PI * 2.0, true);
 					ctx.strokeStyle = "#0f0";
 					ctx.lineWidth = 50;
 					ctx.stroke();
@@ -275,81 +370,81 @@
 			}
 
 			if (stakeStars !== null) {
-				for (i=0; i<stakeStars.length; i++) {
-					var x = stakeStars[i].radial_distance * Math.sin(-stakeStars[i].longitude*(Math.PI/180));
-					var y = -1*stakeStars[i].radial_distance * Math.cos(stakeStars[i].longitude*(Math.PI/180));
+				for (i = 0; i < stakeStars.length; i++) {
+					var x = stakeStars[i].radial_distance * Math.sin(-stakeStars[i].longitude * (Math.PI / 180));
+					var y = -1 * stakeStars[i].radial_distance * Math.cos(stakeStars[i].longitude * (Math.PI / 180));
 					var size = RSol;
 					var alpha = 1;
 					var color = starColor(stakeStars[i].color.join("_"), alpha);
 
 					if (document.getElementById("size").checked) {
-						size = RSol*stakeStars[i].radius;
+						size = RSol * stakeStars[i].radius;
 					}
 
 					ctx.beginPath();
 					ctx.ellipse(x, y, size, size, Math.PI * 4.0, 0, Math.PI * 2.0, true);
 					ctx.fillStyle = color;
 					ctx.fill();
-		
+
 					ctx.beginPath();
-					ctx.ellipse(x, y, size+100, size+100, Math.PI * 4.0, 0, Math.PI * 2.0, true);
-					ctx.ellipse(x, y, size+160, size+160, Math.PI * 4.0, 0, Math.PI * 2.0, true);
-					ctx.ellipse(x, y, size+220, size+220, Math.PI * 4.0, 0, Math.PI * 2.0, true);
+					ctx.ellipse(x, y, size + 100, size + 100, Math.PI * 4.0, 0, Math.PI * 2.0, true);
+					ctx.ellipse(x, y, size + 160, size + 160, Math.PI * 4.0, 0, Math.PI * 2.0, true);
+					ctx.ellipse(x, y, size + 220, size + 220, Math.PI * 4.0, 0, Math.PI * 2.0, true);
 					ctx.strokeStyle = "#0f0";
 					ctx.lineWidth = 50;
 					ctx.stroke();
 				}
 			}
 		}
-		
+
 		function starColor(color, alpha) {
 			switch (color) {
 				case "blue":
-				return "rgba(0,0,255, " + alpha + ")";
-				break;
+					return "rgba(0,0,255, " + alpha + ")";
+					break;
 				case "blue_white":
-				return "rgba(100,100,255, " + alpha + ")";
-				break;
+					return "rgba(100,100,255, " + alpha + ")";
+					break;
 				case "light_orange":
-				return "rgba(247,152,61, " + alpha + ")";
-				break;
+					return "rgba(247,152,61, " + alpha + ")";
+					break;
 				case "orange_red":
-				return "rgba(255,80,0, " + alpha + ")";
-				break;
+					return "rgba(255,80,0, " + alpha + ")";
+					break;
 				case "yellow":
-				return "rgba(255,255,0, " + alpha + ")";
-				break;
+					return "rgba(255,255,0, " + alpha + ")";
+					break;
 				case "yellow_white":
-				return "rgba(239,239,122, " + alpha + ")";
-				break;
+					return "rgba(239,239,122, " + alpha + ")";
+					break;
 				default:
-				return "rgba(255,255,255, " + alpha + ")";
+					return "rgba(255,255,255, " + alpha + ")";
 			}
 		}
-		
+
 		function regionColor(region) {
 			switch (region) {
 				case "Galactic Bar":
-				return "rgba(76,114,176,1)";
-				break;
+					return "rgba(76,114,176,1)";
+					break;
 				case "Hypatian Arm":
-				return "rgba(85,168,104,1)";
-				break;
+					return "rgba(85,168,104,1)";
+					break;
 				case "Jacobian Spur":
-				return "rgba(129,114,179,1)";
-				break;
+					return "rgba(129,114,179,1)";
+					break;
 				case "Marshan Arm":
-				return "rgba(221,132,82,1)";
-				break;
+					return "rgba(221,132,82,1)";
+					break;
 				case "Nether Arm":
-				return "rgba(196,78,82,1)";
-				break;
+					return "rgba(196,78,82,1)";
+					break;
 				case "Outerlands":
-				return "rgba(218,139,195,1)";
-				break;
+					return "rgba(218,139,195,1)";
+					break;
 				case "Ridean Spur":
-				return "rgba(147,120,96,1)";
-				break;
+					return "rgba(147,120,96,1)";
+					break;
 			}
 		}
 
