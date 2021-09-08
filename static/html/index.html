@@ -164,10 +164,22 @@
 		req.send(null);
 		
 		function getStakeDexo(stakeAddress) {
+			var button = document.getElementById("fetch-dexo")
+			button.disabled = true;
+			
+			var intervalID = setInterval(function(){
+				i = ++i % 4;
+				button.innerHTML = "Loading" + Array(i+1).join(".");
+			}, 800);
+
 			var req = new XMLHttpRequest();
 			req.overrideMimeType("application/json");
 			req.open('GET', '/stake/'+stakeAddress, true);
 			req.onreadystatechange = function () {
+				clearInterval(intervalID);
+				button.innerHTML = "Fetch";
+				button.disabled = false;
+
 				if (req.readyState == 4 && req.status == "200") {
 					stakeStars = JSON.parse(req.responseText);
 					draw();
