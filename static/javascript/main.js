@@ -179,7 +179,7 @@ function paintFocused() {
 			ctx.lineWidth = 50;
 			ctx.stroke();
 
-			nameStar(x,y,stakeStars[i].name);
+			nameStar(x,y,stakeStars[i].name + " #" + stakeStars[i].star_id);
 		}
 	}
 }
