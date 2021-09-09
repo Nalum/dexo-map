@@ -141,13 +141,8 @@ function paintFocused() {
 			ctx.ellipse(x, y, size, size, Math.PI * 4.0, 0, Math.PI * 2.0, true);
 			ctx.fillStyle = color;
 			ctx.fill();
-
-			ctx.beginPath();
-			ctx.ellipse(x, y, size + 100, size + 100, Math.PI * 4.0, 0, Math.PI * 2.0, true);
-			ctx.ellipse(x, y, size + 160, size + 160, Math.PI * 4.0, 0, Math.PI * 2.0, true);
-			ctx.ellipse(x, y, size + 220, size + 220, Math.PI * 4.0, 0, Math.PI * 2.0, true);
 			ctx.strokeStyle = "#0f0";
-			ctx.lineWidth = 50;
+			ctx.lineWidth = 40;
 			ctx.stroke();
 
 			nameStar(x,y,data[0]);
@@ -170,13 +165,8 @@ function paintFocused() {
 			ctx.ellipse(x, y, size, size, Math.PI * 4.0, 0, Math.PI * 2.0, true);
 			ctx.fillStyle = color;
 			ctx.fill();
-
-			ctx.beginPath();
-			ctx.ellipse(x, y, size + 100, size + 100, Math.PI * 4.0, 0, Math.PI * 2.0, true);
-			ctx.ellipse(x, y, size + 160, size + 160, Math.PI * 4.0, 0, Math.PI * 2.0, true);
-			ctx.ellipse(x, y, size + 220, size + 220, Math.PI * 4.0, 0, Math.PI * 2.0, true);
 			ctx.strokeStyle = "#0f0";
-			ctx.lineWidth = 50;
+			ctx.lineWidth = 40;
 			ctx.stroke();
 
 			nameStar(x,y,stakeStars[i].name + " #" + stakeStars[i].star_id);
@@ -190,7 +180,7 @@ function nameStar(x, y, name) {
 	ctx.beginPath();
 	ctx.lineWidth = 50;
 	ctx.strokeStyle = "#0f0";
-	ctx.moveTo(x,y);
+	ctx.moveTo(x+55,y-55);
 	ctx.lineTo(x+300,y-300);
 	ctx.lineTo(x+textSize.width+100,y-300);
 	ctx.stroke();
@@ -268,6 +258,7 @@ window.onload = function () {
 			lastY = evt.offsetY - (canvas.width / 2) || (evt.pageY - (canvas.width / 2)) - canvas.offsetTop;
 			dragStart = ctx.transformedPoint(lastX, lastY);
 			dragged = false;
+			canvas.className = "grabbing";
 		},
 		false
 	);
@@ -291,6 +282,7 @@ window.onload = function () {
 		"mouseup",
 		function (evt) {
 			dragStart = null;
+			canvas.className = "";
 		},
 		false
 	);

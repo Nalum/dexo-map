@@ -149,3 +149,7 @@ main section#map canvas#galaxy {
 	margin: 0 auto;
 	cursor: grab;
 }
+
+main section#map canvas#galaxy.grabbing {
+	cursor: grabbing;
+}
