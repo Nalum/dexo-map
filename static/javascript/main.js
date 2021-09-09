@@ -116,12 +116,12 @@ function paintTheStars() {
 		ctx.beginPath();
 		var color = starColor(stars[k].color.join("_"), alpha);
 		ctx.fillStyle = color;
-		ctx.ellipse(x, y, size, size, Math.PI * 4.0, 0, Math.PI * 2.0, true);
+		ctx.ellipse(x, y, size, size, 0, 0, Math.PI * 2.0);
 		ctx.fill();
 
 		if (document.getElementById("regions").checked) {
 			ctx.beginPath();
-			ctx.ellipse(x, y, size + 5, size + 5, Math.PI * 4.0, 0, Math.PI * 2.0, true);
+			ctx.ellipse(x, y, size + 5, size + 5, 0, 0, Math.PI * 2.0);
 			var color = regionColor(stars[k].region);
 			ctx.strokeStyle = color;
 			ctx.lineWidth = 100;
@@ -138,7 +138,7 @@ function paintFocused() {
 			var data = selected[i].value.split("|");
 			var x = data[1] * 1, y = data[2] * 1, size = data[3] * 1, color = data[4];
 			ctx.beginPath();
-			ctx.ellipse(x, y, size, size, Math.PI * 4.0, 0, Math.PI * 2.0, true);
+			ctx.ellipse(x, y, size, size, 0, 0, Math.PI * 2.0);
 			ctx.fillStyle = color;
 			ctx.fill();
 			ctx.strokeStyle = "#859900";
@@ -162,7 +162,7 @@ function paintFocused() {
 			}
 
 			ctx.beginPath();
-			ctx.ellipse(x, y, size, size, Math.PI * 4.0, 0, Math.PI * 2.0, true);
+			ctx.ellipse(x, y, size, size, 0, 0, Math.PI * 2.0);
 			ctx.fillStyle = color;
 			ctx.fill();
 			ctx.strokeStyle = "#859900";
