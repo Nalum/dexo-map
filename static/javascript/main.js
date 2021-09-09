@@ -203,17 +203,10 @@ function paintFocused() {
 				ctx.fill();
 
 				if (planet.owned) {
-					ctx.strokeStyle = "#859900";
-					ctx.lineWidth = 10;
 					ctx.beginPath();
-					ctx.moveTo(px-3, py+3);
-					ctx.lineTo(px+30, py-30);
-					ctx.stroke();
-
-					ctx.beginPath();
-					ctx.moveTo(px, py);
-					ctx.lineTo(px-15, py-15);
-					ctx.stroke();
+					ctx.ellipse(px, py, 10, 10, 0, 0, Math.PI *2.0);
+					ctx.fillStyle = "#859900";
+					ctx.fill();
 				}
 			});
 		});
