@@ -141,7 +141,7 @@ function paintFocused() {
 			ctx.ellipse(x, y, size, size, Math.PI * 4.0, 0, Math.PI * 2.0, true);
 			ctx.fillStyle = color;
 			ctx.fill();
-			ctx.strokeStyle = "#0f0";
+			ctx.strokeStyle = "#859900";
 			ctx.lineWidth = 40;
 			ctx.stroke();
 
@@ -165,7 +165,7 @@ function paintFocused() {
 			ctx.ellipse(x, y, size, size, Math.PI * 4.0, 0, Math.PI * 2.0, true);
 			ctx.fillStyle = color;
 			ctx.fill();
-			ctx.strokeStyle = "#0f0";
+			ctx.strokeStyle = "#859900";
 			ctx.lineWidth = 40;
 			ctx.stroke();
 
@@ -179,21 +179,21 @@ function nameStar(x, y, name) {
 
 	ctx.beginPath();
 	ctx.lineWidth = 50;
-	ctx.strokeStyle = "#0f0";
+	ctx.strokeStyle = "#859900";
 	ctx.moveTo(x+55,y-55);
 	ctx.lineTo(x+300,y-300);
 	ctx.stroke();
 
 	ctx.beginPath();
 	ctx.lineWidth = 75;
-	ctx.strokeStyle = "#0f0";
+	ctx.strokeStyle = "#859900";
 	ctx.moveTo(x+290,y-300);
 	ctx.lineTo(x+textSize.width+100,y-300);
 	ctx.stroke();
 
 	ctx.beginPath();
 	ctx.fillStyle = "#073642";
-	ctx.strokeStyle = "#0f0"
+	ctx.strokeStyle = "#859900"
 	ctx.lineWidth = 25;
 	ctx.strokeRect(x+280, y-500, textSize.width+125, 200);
 	ctx.fillRect(x+280, y-500, textSize.width+125, 200);
@@ -207,25 +207,25 @@ function nameStar(x, y, name) {
 function starColor(color, alpha) {
 	switch (color) {
 		case "blue":
-			return "rgba(0,0,255, " + alpha + ")";
+			return "rgba(38, 139, 210, " + alpha + ")";
 			break;
 		case "blue_white":
-			return "rgba(100,100,255, " + alpha + ")";
+			return "rgba(42, 161, 152, " + alpha + ")";
 			break;
 		case "light_orange":
-			return "rgba(247,152,61, " + alpha + ")";
+			return "rgba(203, 75, 22, " + alpha + ")";
 			break;
-		case "orange_red":
-			return "rgba(255,80,0, " + alpha + ")";
+			case "orange_red":
+			return "rgba(220, 50, 47, " + alpha + ")";
 			break;
 		case "yellow":
-			return "rgba(255,255,0, " + alpha + ")";
+			return "rgba(181, 137, 0, " + alpha + ")";
 			break;
 		case "yellow_white":
-			return "rgba(239,239,122, " + alpha + ")";
+			return "rgba(201, 157, 20, " + alpha + ")";
 			break;
 		default:
-			return "rgba(255,255,255, " + alpha + ")";
+			return "rgba(253, 246, 227, " + alpha + ")";
 	}
 }
 
