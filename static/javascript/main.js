@@ -151,8 +151,8 @@ function paintFocused() {
 			ctx.fillStyle = "#073642";
 			ctx.strokeStyle = "#859900"
 			ctx.lineWidth = 25;
-			ctx.strokeRect(x+280, y-260, (star.n_planets*60)+20, 100);
-			ctx.fillRect(x+280, y-260, (star.n_planets*60)+20, 100);
+			ctx.strokeRect(x+280, y-260, (stars[data[1]].n_planets*60)+20, 100);
+			ctx.fillRect(x+280, y-260, (stars[data[1]].n_planets*60)+20, 100);
 
 			stars[data[1]].planets.forEach(function(planet, i) {
 				ctx.beginPath();
