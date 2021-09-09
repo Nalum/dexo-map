@@ -182,12 +182,17 @@ function nameStar(x, y, name) {
 	ctx.strokeStyle = "#0f0";
 	ctx.moveTo(x+55,y-55);
 	ctx.lineTo(x+300,y-300);
+	ctx.stroke();
+	ctx.lineWidth = 75;
 	ctx.lineTo(x+textSize.width+100,y-300);
 	ctx.stroke();
 
 	ctx.beginPath();
 	ctx.fillStyle = "#073642";
-	ctx.fillRect(x+325, y-500, textSize.width+100, 200);
+	ctx.strokeStyle = "#0f0"
+	ctx.lineWidth = 25;
+	ctx.strokeRect(x+300, y-500, textSize.width+125, 200);
+	ctx.fillRect(x+300, y-500, textSize.width+125, 200);
 
 	ctx.beginPath();
 	ctx.fillStyle = "#839496";
