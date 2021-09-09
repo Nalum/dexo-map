@@ -132,10 +132,33 @@ func Stake(bfKey string, box *packr.Box) func(http.ResponseWriter, *http.Request
 					}
 
 					starID := 0
+					planetID := 0
 
 					if ocmd, ok := data["onchain_metadata"].(map[string]interface{}); ok {
 						if sid, ok := ocmd["Host Star ID"].(float64); ok {
 							starID = int(sid)
+						}
+
+						if pid, ok := ocmd["id"].(float64); ok {
+							planetID = int(pid)
+						}
+					}
+
+					for starKey, star := range starMap {
+						s := star.(map[string]interface{})
+
+						if planets, ok := s["planets"].([]interface{}); ok {
+							for planetKey, planet := range planets {
+								p := planet.(map[string]interface{})
+								pid := int(p["planet_id"].(float64))
+
+								if planetID == pid {
+									p["owned"] = true
+									planets[planetKey] = p
+									s["planets"] = planets
+									starMap[starKey] = s
+								}
+							}
 						}
 					}
 
