@@ -79,7 +79,7 @@ function populateSelect(stars) {
 		}
 
 		var option = document.createElement("option");
-		option.value = stars[k].name + " #" + stars[k].star_id + "|" + x + "|" + y + "|" + size + "|" + starColor(stars[k].color.join("_"), 1);
+		option.value = stars[k].name + "|" + stars[k].star_id + "|" + x + "|" + y + "|" + size + "|" + starColor(stars[k].color.join("_"), 1);
 		option.innerHTML = stars[k].name + " #" + stars[k].star_id;
 		select.appendChild(option);
 	});
@@ -136,7 +136,7 @@ function paintFocused() {
 	for (i = 0; i < selected.length; i++) {
 		if (selected[i].value != "0") {
 			var data = selected[i].value.split("|");
-			var x = data[1] * 1, y = data[2] * 1, size = data[3] * 1, color = data[4];
+			var x = data[2] * 1, y = data[3] * 1, size = data[4] * 1, color = data[5];
 			ctx.beginPath();
 			ctx.ellipse(x, y, size, size, 0, 0, Math.PI * 2.0);
 			ctx.fillStyle = color;
@@ -145,20 +145,36 @@ function paintFocused() {
 			ctx.lineWidth = 40;
 			ctx.stroke();
 
-			nameStar(x,y,data[0]);
+			nameStar(x,y,data[0] + " #" + data[1]);
+
+			ctx.beginPath();
+			ctx.fillStyle = "#073642";
+			ctx.strokeStyle = "#859900"
+			ctx.lineWidth = 25;
+			ctx.strokeRect(x+280, y-260, (11*60)+20, 100);
+			ctx.fillRect(x+280, y-260, (11*60)+20, 100);
+
+			stars[data[1]].planets.forEach(function(planet, i) {
+				ctx.beginPath();
+				var px = x + 320 + (60*i);
+				var py = y - 205;
+				ctx.ellipse(px, py, 25, 25, 0, 0, Math.PI *2.0);
+				ctx.fillStyle = planet.color;
+				ctx.fill();
+			});
 		}
 	}
 
 	if (stakeStars !== null) {
-		for (i = 0; i < stakeStars.length; i++) {
-			var x = stakeStars[i].radial_distance * Math.sin(-stakeStars[i].longitude * (Math.PI / 180));
-			var y = -1 * stakeStars[i].radial_distance * Math.cos(stakeStars[i].longitude * (Math.PI / 180));
+		stakeStars.forEach(function(star) {
+			var x = star.radial_distance * Math.sin(-star.longitude * (Math.PI / 180));
+			var y = -1 * star.radial_distance * Math.cos(star.longitude * (Math.PI / 180));
 			var size = RSol;
 			var alpha = 1;
-			var color = starColor(stakeStars[i].color.join("_"), alpha);
+			var color = starColor(star.color.join("_"), alpha);
 
 			if (document.getElementById("size").checked) {
-				size = RSol * stakeStars[i].radius;
+				size = RSol * star.radius;
 			}
 
 			ctx.beginPath();
@@ -169,8 +185,24 @@ function paintFocused() {
 			ctx.lineWidth = 40;
 			ctx.stroke();
 
-			nameStar(x,y,stakeStars[i].name + " #" + stakeStars[i].star_id);
-		}
+			nameStar(x,y,star.name + " #" + star.star_id);
+
+			ctx.beginPath();
+			ctx.fillStyle = "#073642";
+			ctx.strokeStyle = "#859900"
+			ctx.lineWidth = 25;
+			ctx.strokeRect(x+280, y-260, (star.n_planets*60)+20, 100);
+			ctx.fillRect(x+280, y-260, (star.n_planets*60)+20, 100);
+
+			star.planets.forEach(function(planet, i) {
+				ctx.beginPath();
+				var px = x + 320 + (60*i);
+				var py = y - 205;
+				ctx.ellipse(px, py, 25, 25, 0, 0, Math.PI *2.0);
+				ctx.fillStyle = planet.color;
+				ctx.fill();
+			});
+		});
 	}
 }
 
