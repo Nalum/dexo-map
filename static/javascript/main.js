@@ -79,7 +79,7 @@ function populateSelect(stars) {
 		}
 
 		var option = document.createElement("option");
-		option.value = stars[k].star_id + "|" + x + "|" + y + "|" + size + "|" + starColor(stars[k].color.join("_"), 1);
+		option.value = stars[k].name + " #" + stars[k].star_id + "|" + x + "|" + y + "|" + size + "|" + starColor(stars[k].color.join("_"), 1);
 		option.innerHTML = stars[k].name + " #" + stars[k].star_id;
 		select.appendChild(option);
 	});
@@ -149,6 +149,8 @@ function paintFocused() {
 			ctx.strokeStyle = "#0f0";
 			ctx.lineWidth = 50;
 			ctx.stroke();
+
+			nameStar(x,y,data[0]);
 		}
 	}
 
@@ -176,8 +178,31 @@ function paintFocused() {
 			ctx.strokeStyle = "#0f0";
 			ctx.lineWidth = 50;
 			ctx.stroke();
+
+			nameStar(x,y,stakeStars[i].name);
 		}
 	}
+}
+
+function nameStar(x, y, name) {
+	var textSize = ctx.measureText(name);
+
+	ctx.beginPath();
+	ctx.lineWidth = 50;
+	ctx.strokeStyle = "#0f0";
+	ctx.moveTo(x,y);
+	ctx.lineTo(x+300,y-300);
+	ctx.lineTo(x+textSize.width+100,y-300);
+	ctx.stroke();
+
+	ctx.beginPath();
+	ctx.fillStyle = "#073642";
+	ctx.fillRect(x+325, y-500, textSize.width+100, 200);
+
+	ctx.beginPath();
+	ctx.fillStyle = "#839496";
+	ctx.font = "bold 160px Arial";
+	ctx.fillText(name, x+350, y-350);
 }
 
 function starColor(color, alpha) {
