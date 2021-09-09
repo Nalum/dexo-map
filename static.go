@@ -23,7 +23,13 @@ func Static(box *packr.Box) func(http.ResponseWriter, *http.Request, httprouter.
 			}
 
 			mtype := mimetype.Detect(file)
-			w.Header().Add("content-type", mtype.String())
+
+			if params.ByName("file") == "/css/main.css" {
+				w.Header().Add("content-type", "text/css")
+			} else {
+				w.Header().Add("content-type", mtype.String())
+			}
+
 			w.Header().Add("cache-control", "public")
 			w.Header().Add("cache-control", "max-age=300")
 			fmt.Fprintf(w, "%s", file)
