@@ -8,6 +8,25 @@ function reset() {
 	draw();
 }
 
+
+const base03 = "#002b36";
+const base02 = "#073642";
+const base01 = "#586e75";
+const base00 = "#657b83";
+const base0 = "#839496";
+const base1 = "#93a1a1";
+const base2 = "#eee8d5";
+const base3 = "#fdf6e3";
+const yellow = "#b58900";
+const orange = "#cb4b16";
+const red = "#dc322f";
+const magenta = "#d33682";
+const violet = "#6c71c4";
+const blue = "#268bd2";
+const cyan = "#2aa198";
+const green = "#859900";
+
+
 const canvas = document.getElementById("galaxy");
 const ctx = canvas.getContext("2d");
 const scaleFactor = 1.1;
@@ -141,27 +160,11 @@ function paintFocused() {
 			ctx.ellipse(x, y, size, size, 0, 0, Math.PI * 2.0);
 			ctx.fillStyle = color;
 			ctx.fill();
-			ctx.strokeStyle = "#859900";
+			ctx.strokeStyle = violet;
 			ctx.lineWidth = 40;
 			ctx.stroke();
 
-			nameStar(x,y,data[0] + " #" + data[1]);
-
-			ctx.beginPath();
-			ctx.fillStyle = "#073642";
-			ctx.strokeStyle = "#859900"
-			ctx.lineWidth = 25;
-			ctx.strokeRect(x+280, y-260, (stars[data[1]].n_planets*60)+20, 100);
-			ctx.fillRect(x+280, y-260, (stars[data[1]].n_planets*60)+20, 100);
-
-			stars[data[1]].planets.forEach(function(planet, i) {
-				ctx.beginPath();
-				var px = x + 320 + (60*i);
-				var py = y - 205;
-				ctx.ellipse(px, py, 25, 25, 0, 0, Math.PI *2.0);
-				ctx.fillStyle = planet.color;
-				ctx.fill();
-			});
+			nameStar(x,y,data[0] + " #" + data[1], stars[data[1]].planets);
 		}
 	}
 
@@ -181,66 +184,82 @@ function paintFocused() {
 			ctx.ellipse(x, y, size, size, 0, 0, Math.PI * 2.0);
 			ctx.fillStyle = color;
 			ctx.fill();
-			ctx.strokeStyle = "#859900";
+			ctx.strokeStyle = violet;
 			ctx.lineWidth = 40;
 			ctx.stroke();
 
-			nameStar(x,y,star.name + " #" + star.star_id);
-
-			ctx.beginPath();
-			ctx.fillStyle = "#073642";
-			ctx.strokeStyle = "#859900";
-			ctx.lineWidth = 25;
-			ctx.strokeRect(x+280, y-260, (star.n_planets*60)+20, 100);
-			ctx.fillRect(x+280, y-260, (star.n_planets*60)+20, 100);
-
-			star.planets.forEach(function(planet, i) {
-				ctx.beginPath();
-				var px = x + 320 + (60*i);
-				var py = y - 205;
-				ctx.ellipse(px, py, 25, 25, 0, 0, Math.PI *2.0);
-				ctx.fillStyle = planet.color;
-				ctx.fill();
-
-				if (planet.owned) {
-					ctx.beginPath();
-					ctx.ellipse(px, py, 10, 10, 0, 0, Math.PI *2.0);
-					ctx.fillStyle = "#859900";
-					ctx.fill();
-				}
-			});
+			nameStar(x,y,star.name + " #" + star.star_id, star.planets);
 		});
 	}
 }
 
-function nameStar(x, y, name) {
+function nameStar(x, y, name, planets) {
 	var textSize = ctx.measureText(name);
+	var ownedCount = 0;
+	var strokeColor = red;
+
+	planets.forEach(function(planet, i) {
+		if (planet.owned) {
+			ownedCount++;
+		}
+	});
+
+	if (ownedCount > 0) {
+		strokeColor = orange;
+	}
+
+	if (ownedCount === planets.length) {
+		strokeColor = green;
+	}
 
 	ctx.beginPath();
 	ctx.lineWidth = 50;
-	ctx.strokeStyle = "#859900";
+	ctx.strokeStyle = violet;
 	ctx.moveTo(x+55,y-55);
 	ctx.lineTo(x+300,y-300);
 	ctx.stroke();
 
 	ctx.beginPath();
 	ctx.lineWidth = 75;
-	ctx.strokeStyle = "#859900";
+	ctx.strokeStyle = strokeColor;
 	ctx.moveTo(x+290,y-300);
 	ctx.lineTo(x+textSize.width+100,y-300);
 	ctx.stroke();
 
 	ctx.beginPath();
-	ctx.fillStyle = "#073642";
-	ctx.strokeStyle = "#859900"
+	ctx.fillStyle = base02;
+	ctx.strokeStyle = violet
 	ctx.lineWidth = 25;
 	ctx.strokeRect(x+280, y-500, textSize.width+125, 200);
 	ctx.fillRect(x+280, y-500, textSize.width+125, 200);
 
 	ctx.beginPath();
-	ctx.fillStyle = "#839496";
+	ctx.fillStyle = base0;
 	ctx.font = "bold 160px Arial";
 	ctx.fillText(name, x+330, y-350);
+
+	ctx.beginPath();
+	ctx.fillStyle = base02;
+	ctx.strokeStyle = violet;
+	ctx.lineWidth = 25;
+	ctx.strokeRect(x+280, y-260, (planets.length*70)+30, 100);
+	ctx.fillRect(x+280, y-260, (planets.length*70)+30, 100);
+
+	planets.forEach(function(planet, i) {
+		ctx.beginPath();
+		var px = x + 330 + (70*i);
+		var py = y - 205;
+		ctx.ellipse(px, py, 25, 25, 0, 0, Math.PI *2.0);
+		ctx.fillStyle = planet.color;
+		ctx.fill();
+
+		if (planet.owned) {
+			ctx.ellipse(px, py, 25, 25, 0, 0, Math.PI *2.0);
+			ctx.strokeStyle = green;
+			ctx.lineWidth = 10;
+			ctx.stroke();
+		}
+	});
 }
 
 function starColor(color, alpha) {
