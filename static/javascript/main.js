@@ -4,10 +4,13 @@ function reset() {
 	document.getElementById('regions').checked = false;
 	document.getElementById('star').value = "0";
 	document.getElementById('stake-address').value = "stake1uydj7egwaj020lstvxctmm67ssyfkxpdcg8tqpsm9f5heug8n0gdz";
-	stakeStars = null;
+	
+	Object.keys(stars).forEach(function(key) {
+		stars[key].planets = stars[key].planets_bak
+	});
+
 	draw();
 }
-
 
 const base03 = "#002b36";
 const base02 = "#073642";
@@ -26,7 +29,6 @@ const blue = "#268bd2";
 const cyan = "#2aa198";
 const green = "#859900";
 
-
 const canvas = document.getElementById("galaxy");
 const ctx = canvas.getContext("2d");
 const scaleFactor = 1.1;
@@ -34,7 +36,6 @@ const RSol = 100;
 var scale = 50;
 var translation = 0;
 var stars = null;
-var stakeStars = null;
 var lastX = 0, lastY = 0;
 var dragStart, dragged;
 ctx.translate(canvas.width / 2, canvas.height / 2);
@@ -46,18 +47,22 @@ req.open('GET', '/stars', true);
 req.onreadystatechange = function () {
 	if (req.readyState == 4 && req.status == "200") {
 		stars = JSON.parse(req.responseText);
+		
 		Object.keys(stars).forEach(function (k, i) {
 			if (stars[k].luminosity > maxLums) {
 				maxLums = stars[k].luminosity;
 			}
 		});
+
 		populateSelect(stars);
 		draw();
+		
 		var anim = setInterval(function () {
 			var as = 0.9877;
 			ctx.scale(as, as);
 			draw();
 		}, 16);
+		
 		setTimeout(function () {
 			clearInterval(anim);
 		}, 5300);
@@ -73,15 +78,29 @@ function getStakeDexo(stakeAddress) {
 	var req = new XMLHttpRequest();
 	req.overrideMimeType("application/json");
 	req.open('GET', '/stake/' + stakeAddress, true);
+
 	req.onreadystatechange = function () {
 		button.innerHTML = "Fetch";
 		button.disabled = false;
 
 		if (req.readyState == 4 && req.status == "200") {
-			stakeStars = JSON.parse(req.responseText);
+			var stakeStars = JSON.parse(req.responseText);
+			stakeStars.forEach(function(star) {
+				stars[star.star_id].planets_bak = stars[star.star_id].planets;
+				stars[star.star_id].planets = star.planets;
+				document.getElementById("star").childNodes.forEach(function(option){
+					if (option.value) {
+						if (option.value.includes("|"+star.star_id+"|")) {
+							option.selected = true;
+						}
+					}
+				});
+			});
+
 			draw();
 		}
 	};
+
 	req.send(null);
 }
 
@@ -166,30 +185,6 @@ function paintFocused() {
 
 			nameStar(x,y,data[0] + " #" + data[1], stars[data[1]].planets);
 		}
-	}
-
-	if (stakeStars !== null) {
-		stakeStars.forEach(function(star) {
-			var x = star.radial_distance * Math.sin(-star.longitude * (Math.PI / 180));
-			var y = -1 * star.radial_distance * Math.cos(star.longitude * (Math.PI / 180));
-			var size = RSol;
-			var alpha = 1;
-			var color = starColor(star.color.join("_"), alpha);
-
-			if (document.getElementById("size").checked) {
-				size = RSol * star.radius;
-			}
-
-			ctx.beginPath();
-			ctx.ellipse(x, y, size, size, 0, 0, Math.PI * 2.0);
-			ctx.fillStyle = color;
-			ctx.fill();
-			ctx.strokeStyle = violet;
-			ctx.lineWidth = 40;
-			ctx.stroke();
-
-			nameStar(x,y,star.name + " #" + star.star_id, star.planets);
-		});
 	}
 }
 
