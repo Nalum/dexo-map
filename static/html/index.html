@@ -26,7 +26,8 @@
 				<h1>HOW TO</h1>
 				<hr />
 				<p>
-					Under the OWNED header enter your Cardano Stake Address in the input field and click
+					Under the OWNED header enter your Cardano Address <span class="note">(starting with
+					<code>stake</code> or <code>addr</code>)</span> in the input field and click
 					the Fetch button to have your data fetched and displayed on the map.
 				</p>
 				<p>
@@ -55,7 +56,7 @@
 			<section id="form" class="hidden">
 				<h1>OWNED</h1>
 				<hr />
-				<label for="stake-address">Cardano Stake Address:</label>
+				<label for="stake-address">Cardano Address: <span class="note">(starting with <code>stake</code> or <code>addr</code>)</span></label>
 				<input type="text" id="stake-address" name="stake-address" value="stake1uydj7egwaj020lstvxctmm67ssyfkxpdcg8tqpsm9f5heug8n0gdz" />
 				<button id="fetch-dexo" onclick="getStakeDexo(document.getElementById('stake-address').value);">Fetch</button>
 				<hr />

@@ -418,7 +418,7 @@ function generateFilterString(planet) {
 	var composition = typeof planet !== "undefined" ? planet.composition : document.getElementById("composition").value;
 	var large_satellites = typeof planet !== "undefined" ? planet.large_satellites : document.getElementById("large_satellites").value;
 	var life = typeof planet !== "undefined" ? (planet.life === "" ? "none" : planet.life) : document.getElementById("life").value;
-	var planetary_position = typeof planet !== "undefined" ? planet.planetary_position : document.getElementById("planetary_position").value;
+	var planetary_position = typeof planet !== "undefined" ? planet.planetary_position.split(" ")[0] : document.getElementById("planetary_position").value;
 	var research_impact = typeof planet !== "undefined" ? planet.research_impact : document.getElementById("research_impact").value;
 	var rings = typeof planet !== "undefined" ? (planet.rings === "" ? "none" : planet.rings) : document.getElementById("rings").value;
 	var rings_color = typeof planet !== "undefined" ? (planet.rings_color === "" ? "none": planet.rings_color) : document.getElementById("rings_color").value;
