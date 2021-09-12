@@ -396,9 +396,15 @@ function nameStar(x, y, name, planets, filter) {
 		if (filter != "") {
 			if (filter == planet_filter) {
 				ctx.beginPath();
-				ctx.ellipse(px, py, 25, 25, 0, 0, Math.PI *2.0);
+				
+				if (planet.owned) {
+					ctx.ellipse(px, py, 20, 20, 0, 0, Math.PI *2.0);
+				} else {
+					ctx.ellipse(px, py, 25, 25, 0, 0, Math.PI *2.0);
+				}
+
 				ctx.strokeStyle = base3;
-				ctx.lineWidth = 5;
+				ctx.lineWidth = 2.5;
 				ctx.stroke();
 			}
 		}
