@@ -26,6 +26,10 @@ html * {
 	background-color: #002b36;
 }
 
+.hidden {
+	display: none;
+}
+
 body {
 	margin: 10px;
 	background-color: #002b36;
@@ -66,8 +70,13 @@ main section#data {
 	grid-column: 1;
 }
 
+main section#data section {
+	margin: 0;
+	padding: 0;
+}
+
 main section#data hr {
-	margin: 10px 0px;
+	margin: 5px 0px;
 	border: 2px solid #002b36;
 }
 

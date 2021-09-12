@@ -1,12 +1,18 @@
+function showHide() {
+	document.getElementById("how-to").className = document.getElementById("how-to").className == "" ? "hidden" : "";
+	document.getElementById("form").className = document.getElementById("form").className == "" ? "hidden" : "";
+}
+
 function reset() {
 	document.getElementById('size').checked = false;
 	document.getElementById('alpha').checked = false;
 	document.getElementById('regions').checked = false;
+	document.getElementById('limit_owned').checked = false;
 	document.getElementById('star').value = "0";
 	document.getElementById('stake-address').value = "stake1uydj7egwaj020lstvxctmm67ssyfkxpdcg8tqpsm9f5heug8n0gdz";
-	
-	Object.keys(stars).forEach(function(key) {
-		stars[key].planets = stars[key].planets_bak
+
+	Object.keys(filters).forEach(function(k) {
+		document.getElementById(k).value = "0";
 	});
 
 	draw();
@@ -38,23 +44,37 @@ var translation = 0;
 var stars = null;
 var lastX = 0, lastY = 0;
 var dragStart, dragged;
-ctx.translate(canvas.width / 2, canvas.height / 2);
 var maxLums = 0.0, minLums = 0.1;
+var filters = {
+	"bg_star_color": {},
+	"color": {},
+	"composition": {},
+	"large_satellites": {},
+	"life": {},
+	"planetary_position": {},
+	"research_impact": {},
+	"rings": {},
+	"rings_color": {},
+	"satellites": {},
+	"size": {}
+};
+
+ctx.translate(canvas.width / 2, canvas.height / 2);
 
 var req = new XMLHttpRequest();
 req.overrideMimeType("application/json");
 req.open('GET', '/stars', true);
 req.onreadystatechange = function () {
 	if (req.readyState == 4 && req.status == "200") {
-		stars = JSON.parse(req.responseText);
+		window.stars = JSON.parse(req.responseText);
 		
-		Object.keys(stars).forEach(function (k, i) {
-			if (stars[k].luminosity > maxLums) {
-				maxLums = stars[k].luminosity;
+		Object.keys(window.stars).forEach(function (k, i) {
+			if (window.stars[k].luminosity > maxLums) {
+				maxLums = window.stars[k].luminosity;
 			}
 		});
 
-		populateSelect(stars);
+		populateSelects();
 		draw();
 		
 		var anim = setInterval(function () {
@@ -80,19 +100,24 @@ function getStakeDexo(stakeAddress) {
 	req.open('GET', '/stake/' + stakeAddress, true);
 
 	req.onreadystatechange = function () {
+		var starSelect = document.getElementById("star");
+		starSelect.value = "0";
 		button.innerHTML = "Fetch";
 		button.disabled = false;
 
+		Object.keys(filters).forEach(function(k) {
+			document.getElementById(k).value = "0";
+		});
+
 		if (req.readyState == 4 && req.status == "200") {
 			var stakeStars = JSON.parse(req.responseText);
+
 			stakeStars.forEach(function(star) {
-				stars[star.star_id].planets_bak = stars[star.star_id].planets;
-				stars[star.star_id].planets = star.planets;
-				document.getElementById("star").childNodes.forEach(function(option){
-					if (option.value) {
-						if (option.value.includes("|"+star.star_id+"|")) {
-							option.selected = true;
-						}
+				window.stars[star.star_id].planets = star.planets;
+
+				starSelect.childNodes.forEach(function(option){
+					if (option.value.includes("|"+star.star_id+"|")) {
+						option.selected = true;
 					}
 				});
 			});
@@ -104,47 +129,71 @@ function getStakeDexo(stakeAddress) {
 	req.send(null);
 }
 
-function populateSelect(stars) {
+function populateSelects() {
 	var select = document.getElementById("star");
 
-	Object.keys(stars).forEach(function (k, i) {
-		var x = stars[k].radial_distance * Math.sin(-stars[k].longitude * (Math.PI / 180));
-		var y = -1 * stars[k].radial_distance * Math.cos(stars[k].longitude * (Math.PI / 180));
+	Object.keys(window.stars).forEach(function (k, i) {
+		var x = window.stars[k].radial_distance * Math.sin(-window.stars[k].longitude * (Math.PI / 180));
+		var y = -1 * window.stars[k].radial_distance * Math.cos(window.stars[k].longitude * (Math.PI / 180));
 		var size = RSol;
 
-		if (document.getElementById("size").checked) {
-			size = RSol * stars[k].radius;
+		if (document.getElementById("sizes").checked) {
+			size = RSol * window.stars[k].radius;
 		}
 
 		var option = document.createElement("option");
-		option.value = stars[k].name + "|" + stars[k].star_id + "|" + x + "|" + y + "|" + size + "|" + starColor(stars[k].color.join("_"), 1);
-		option.innerHTML = stars[k].name + " #" + stars[k].star_id;
+		option.value = window.stars[k].name + "|" + window.stars[k].star_id + "|" + x + "|" + y + "|" + size + "|" + starColor(window.stars[k].color.join("_"), 1);
+		option.innerHTML = window.stars[k].name + " #" + window.stars[k].star_id;
 		select.appendChild(option);
+
+		window.stars[k].planets.forEach(function(planet) {
+			filters["bg_star_color"][planet.bg_star_color] = true;
+			filters["color"][planet.color] = true;
+			filters["composition"][planet.composition] = true;
+			filters["large_satellites"][planet.large_satellites] = true;
+			filters["life"][planet.life == "" ? "none" : planet.life] = true;
+			filters["planetary_position"][planet.planetary_position[0] + (planet.planetary_position[1] != " " ? planet.planetary_position[1] : "")] = true;
+			filters["research_impact"][planet.research_impact] = true;
+			filters["rings"][planet.rings == "" ? "none" : planet.rings] = true;
+			filters["rings_color"][planet.rings_color == "" ? "none" : planet.rings_color] = true;
+			filters["satellites"][planet.satellites] = true;
+			filters["size"][planet.size] = true;
+		});
+	});
+
+	Object.keys(filters).forEach(function(k) {
+		Object.keys(filters[k]).forEach(function(v) {
+			var option = document.createElement("option");
+			option.value = v;
+			option.innerHTML = v;
+			document.getElementById(k).appendChild(option);
+		});
 	});
 }
 
 function draw() {
 	ctx.clearRect(-canvas.width * 1000, -canvas.width * 1000, canvas.width * 2000, canvas.width * 2000);
 
-	if (stars !== null) {
+	if (window.stars !== null) {
 		paintTheStars();
-		paintFocused();
+		var planet_filter = generateFilterString();
+		paintFocused(planet_filter);
 	}
 }
 
 function paintTheStars() {
-	Object.keys(stars).forEach(function (k, i) {
-		var x = stars[k].radial_distance * Math.sin(-stars[k].longitude * (Math.PI / 180));
-		var y = -1 * stars[k].radial_distance * Math.cos(stars[k].longitude * (Math.PI / 180));
+	Object.keys(window.stars).forEach(function (k, i) {
+		var x = window.stars[k].radial_distance * Math.sin(-window.stars[k].longitude * (Math.PI / 180));
+		var y = -1 * window.stars[k].radial_distance * Math.cos(window.stars[k].longitude * (Math.PI / 180));
 		var size = RSol;
 		var alpha = 1;
 
-		if (document.getElementById("size").checked) {
-			size = RSol * stars[k].radius;
+		if (document.getElementById("sizes").checked) {
+			size = RSol * window.stars[k].radius;
 		}
 
 		if (document.getElementById("alpha").checked) {
-			alpha = stars[k].luminosity / maxLums;
+			alpha = window.stars[k].luminosity / maxLums;
 
 			if (alpha < minLums) {
 				alpha = minLums;
@@ -152,7 +201,7 @@ function paintTheStars() {
 		}
 
 		ctx.beginPath();
-		var color = starColor(stars[k].color.join("_"), alpha);
+		var color = starColor(window.stars[k].color.join("_"), alpha);
 		ctx.fillStyle = color;
 		ctx.ellipse(x, y, size, size, 0, 0, Math.PI * 2.0);
 		ctx.fill();
@@ -160,7 +209,7 @@ function paintTheStars() {
 		if (document.getElementById("regions").checked) {
 			ctx.beginPath();
 			ctx.ellipse(x, y, size + 5, size + 5, 0, 0, Math.PI * 2.0);
-			var color = regionColor(stars[k].region);
+			var color = regionColor(window.stars[k].region);
 			ctx.strokeStyle = color;
 			ctx.lineWidth = 100;
 			ctx.stroke();
@@ -168,7 +217,52 @@ function paintTheStars() {
 	});
 }
 
-function paintFocused() {
+function updateStarSelect() {
+	var filterString = generateFilterString();
+	var matchingStars = [];
+	var starSelect = document.getElementById("star");
+	var planetCount = 0;
+	var limitOwned = document.getElementById("limit_owned").checked;
+	starSelect.value = "0";
+
+	if (filterString !== "") {
+		Object.keys(window.stars).forEach(function(starID) {
+			window.stars[starID].planets.forEach(function(planet) {
+				var planetFilterString = generateFilterString(planet);
+
+				if (filterString === planetFilterString) {
+					if (limitOwned) {
+						if (planet.owned) {
+							if (matchingStars.indexOf(planet.host_star.star_id) == -1) {
+								matchingStars.push(planet.host_star.star_id);
+							}
+
+							planetCount++;
+						}
+					} else {
+						if (matchingStars.indexOf(planet.host_star.star_id) == -1) {
+							matchingStars.push(planet.host_star.star_id);
+						}
+
+						planetCount++;
+					}
+				}
+			});
+		});
+
+		matchingStars.forEach(function(starID) {
+			starSelect.childNodes.forEach(function(option) {
+				if (option.value.includes("|"+starID+"|")) {
+					option.selected = true;
+				}
+			});
+		});
+	}
+
+	document.getElementById("planet_count").innerHTML = planetCount;
+}
+
+function paintFocused(filter) {
 	var selected = document.getElementById("star").selectedOptions;
 
 	for (i = 0; i < selected.length; i++) {
@@ -183,12 +277,12 @@ function paintFocused() {
 			ctx.lineWidth = 40;
 			ctx.stroke();
 
-			nameStar(x,y,data[0] + " #" + data[1], stars[data[1]].planets);
+			nameStar(x,y,data[0] + " #" + data[1], window.stars[data[1]].planets, filter);
 		}
 	}
 }
 
-function nameStar(x, y, name, planets) {
+function nameStar(x, y, name, planets, filter) {
 	var textSize = ctx.measureText(name);
 	var ownedCount = 0;
 	var strokeColor = red;
@@ -241,20 +335,176 @@ function nameStar(x, y, name, planets) {
 	ctx.fillRect(x+280, y-260, (planets.length*70)+30, 100);
 
 	planets.forEach(function(planet, i) {
-		ctx.beginPath();
+		var planet_filter = generateFilterString(planet);
 		var px = x + 330 + (70*i);
 		var py = y - 205;
-		ctx.ellipse(px, py, 25, 25, 0, 0, Math.PI *2.0);
-		ctx.fillStyle = planet.color;
-		ctx.fill();
+		
+		if (planet.color === "rainbow") {
+			ctx.beginPath();
+			ctx.ellipse(px, py, 25, 25, 0, 0, Math.PI * 2);
+			ctx.fillStyle = yellow;
+			ctx.fill();
+
+			ctx.beginPath();
+			ctx.ellipse(px, py, 25, 25, 0, 0, Math.PI * 1.75);
+			ctx.fillStyle = orange;
+			ctx.fill();
+
+			ctx.beginPath();
+			ctx.ellipse(px, py, 25, 25, 0, 0, Math.PI * 1.5);
+			ctx.fillStyle = red;
+			ctx.fill();
+
+			ctx.beginPath();
+			ctx.ellipse(px, py, 25, 25, 0, 0, Math.PI * 1.25);
+			ctx.fillStyle = magenta;
+			ctx.fill();
+
+			ctx.beginPath();
+			ctx.ellipse(px, py, 25, 25, 0, 0, Math.PI * 1);
+			ctx.fillStyle = violet;
+			ctx.fill();
+
+			ctx.beginPath();
+			ctx.ellipse(px, py, 25, 25, 0, 0, Math.PI * 0.75);
+			ctx.fillStyle = blue;
+			ctx.fill();
+
+			ctx.beginPath();
+			ctx.ellipse(px, py, 25, 25, 0, 0, Math.PI * 0.5);
+			ctx.fillStyle = cyan;
+			ctx.fill();
+
+			ctx.beginPath();
+			ctx.ellipse(px, py, 25, 25, 0, 0, Math.PI * 0.25);
+			ctx.fillStyle = green;
+			ctx.fill();
+		} else {
+			ctx.beginPath();
+			ctx.ellipse(px, py, 25, 25, 0, 0, Math.PI * 2.0);
+			ctx.fillStyle = planet.color;
+			ctx.fill();
+		}
 
 		if (planet.owned) {
+			ctx.beginPath();
 			ctx.ellipse(px, py, 25, 25, 0, 0, Math.PI *2.0);
 			ctx.strokeStyle = green;
 			ctx.lineWidth = 10;
 			ctx.stroke();
 		}
+
+		if (filter != "") {
+			if (filter == planet_filter) {
+				ctx.beginPath();
+				ctx.ellipse(px, py, 25, 25, 0, 0, Math.PI *2.0);
+				ctx.strokeStyle = base3;
+				ctx.lineWidth = 5;
+				ctx.stroke();
+			}
+		}
 	});
+}
+
+function generateFilterString(planet) {
+	var filterString = "";
+	var bg_star_color = typeof planet !== "undefined" ? planet.bg_star_color : document.getElementById("bg_star_color").value;
+	var color = typeof planet !== "undefined" ? planet.color : document.getElementById("color").value;
+	var composition = typeof planet !== "undefined" ? planet.composition : document.getElementById("composition").value;
+	var large_satellites = typeof planet !== "undefined" ? planet.large_satellites : document.getElementById("large_satellites").value;
+	var life = typeof planet !== "undefined" ? planet.life : document.getElementById("life").value === "none" ? "" : document.getElementById("life").value;
+	var planetary_position = typeof planet !== "undefined" ? planet.planetary_position : document.getElementById("planetary_position").value;
+	var research_impact = typeof planet !== "undefined" ? planet.research_impact : document.getElementById("research_impact").value;
+	var rings = typeof planet !== "undefined" ? planet.rings : document.getElementById("rings").value === "none" ? "" : document.getElementById("rings").value;
+	var rings_color = typeof planet !== "undefined" ? planet.rings_color : document.getElementById("rings_color").value === "none" ? "" : document.getElementById("rings_color").value;
+	var satellites = typeof planet !== "undefined" ? planet.satellites : document.getElementById("satellites").value;
+	var size = typeof planet !== "undefined" ? planet.size : document.getElementById("size").value;
+
+	if (document.getElementById("bg_star_color").value != "0") {
+		filterString += bg_star_color;
+	}
+
+	if (document.getElementById("color").value != "0") {
+		if (filterString.length > 0) {
+			filterString += "|";
+		}
+
+		filterString += color;
+	}
+
+	if (document.getElementById("composition").value != "0") {
+		if (filterString.length > 0) {
+			filterString += "|";
+		}
+
+		filterString += composition;
+	}
+
+	if (document.getElementById("large_satellites").value != "0") {
+		if (filterString.length > 0) {
+			filterString += "|";
+		}
+
+		filterString += large_satellites;
+	}
+
+	if (document.getElementById("life").value != "0") {
+		if (filterString.length > 0) {
+			filterString += "|";
+		}
+
+		filterString += life;
+	}
+
+	if (document.getElementById("planetary_position").value != "0") {
+		if (filterString.length > 0) {
+			filterString += "|";
+		}
+
+		filterString += planetary_position;
+	}
+
+	if (document.getElementById("research_impact").value != "0") {
+		if (filterString.length > 0) {
+			filterString += "|";
+		}
+
+		filterString += research_impact;
+	}
+
+	if (document.getElementById("rings").value != "0") {
+		if (filterString.length > 0) {
+			filterString += "|";
+		}
+
+		filterString += rings;
+	}
+
+	if (document.getElementById("rings_color").value != "0") {
+		if (filterString.length > 0) {
+			filterString += "|";
+		}
+
+		filterString += rings_color;
+	}
+
+	if (document.getElementById("satellites").value != "0") {
+		if (filterString.length > 0) {
+			filterString += "|";
+		}
+
+		filterString += satellites;
+	}
+
+	if (document.getElementById("size").value != "0") {
+		if (filterString.length > 0) {
+			filterString += "|";
+		}
+
+		filterString += size;
+	}
+
+	return filterString;
 }
 
 function starColor(color, alpha) {
