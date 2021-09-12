@@ -26,6 +26,8 @@ func Static(box *packr.Box) func(http.ResponseWriter, *http.Request, httprouter.
 
 			if params.ByName("file") == "/css/main.css" {
 				w.Header().Add("content-type", "text/css")
+			} else if params.ByName("file") == "/javascript/main.js" {
+				w.Header().Add("content-type", "text/javascript")
 			} else {
 				w.Header().Add("content-type", mtype.String())
 			}
