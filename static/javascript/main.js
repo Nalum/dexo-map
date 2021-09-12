@@ -176,8 +176,7 @@ function draw() {
 
 	if (window.stars !== null) {
 		paintTheStars();
-		var planet_filter = generateFilterString();
-		paintFocused(planet_filter);
+		paintFocused(generateFilterString());
 	}
 }
 
@@ -412,11 +411,11 @@ function generateFilterString(planet) {
 	var color = typeof planet !== "undefined" ? planet.color : document.getElementById("color").value;
 	var composition = typeof planet !== "undefined" ? planet.composition : document.getElementById("composition").value;
 	var large_satellites = typeof planet !== "undefined" ? planet.large_satellites : document.getElementById("large_satellites").value;
-	var life = typeof planet !== "undefined" ? planet.life : document.getElementById("life").value === "none" ? "" : document.getElementById("life").value;
+	var life = typeof planet !== "undefined" ? (planet.life === "" ? "none" : planet.life) : document.getElementById("life").value;
 	var planetary_position = typeof planet !== "undefined" ? planet.planetary_position : document.getElementById("planetary_position").value;
 	var research_impact = typeof planet !== "undefined" ? planet.research_impact : document.getElementById("research_impact").value;
-	var rings = typeof planet !== "undefined" ? planet.rings : document.getElementById("rings").value === "none" ? "" : document.getElementById("rings").value;
-	var rings_color = typeof planet !== "undefined" ? planet.rings_color : document.getElementById("rings_color").value === "none" ? "" : document.getElementById("rings_color").value;
+	var rings = typeof planet !== "undefined" ? (planet.rings === "" ? "none" : planet.rings) : document.getElementById("rings").value;
+	var rings_color = typeof planet !== "undefined" ? (planet.rings_color === "" ? "none": planet.rings_color) : document.getElementById("rings_color").value;
 	var satellites = typeof planet !== "undefined" ? planet.satellites : document.getElementById("satellites").value;
 	var size = typeof planet !== "undefined" ? planet.size : document.getElementById("size").value;
 
