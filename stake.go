@@ -27,18 +27,50 @@ const cacheAge = 240 * time.Minute
 
 var client = &http.Client{}
 var stakeAddrs = map[string]Cache{}
+var addrToStake = map[string]string{}
 
 func Stake(bfKey string, box *packr.Box) func(http.ResponseWriter, *http.Request, httprouter.Params) {
 	return func(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 		log.Println("Stake Function Requested")
 		stake := params.ByName("stake")
-		log.Printf("Stake Address: %s\n", stake)
+		log.Printf("Cardano Address: %s\n", stake)
 
 		w.Header().Add("content-type", "text/json")
 		w.Header().Add("cache-control", "public")
 		w.Header().Add("cache-control", "max-age=300")
 
 		if stake != "" && bfKey != "" {
+			if sa, ok := addrToStake[stake]; ok {
+				stake = sa
+			} else {
+				if strings.HasPrefix(stake, "addr") {
+					req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("https://cardano-mainnet.blockfrost.io/api/v0/addresses/%s", stake), nil)
+
+					if err != nil {
+						log.Println(err)
+					}
+
+					req.Header.Add("project_id", bfKey)
+					resp, err := client.Do(req)
+
+					if err != nil {
+						log.Println(err)
+					}
+
+					data := map[string]interface{}{}
+					err = json.NewDecoder(resp.Body).Decode(&data)
+
+					if err != nil {
+						log.Println(err)
+					}
+
+					if sa, ok := data["stake_address"].(string); ok {
+						addrToStake[stake] = sa
+						stake = sa
+					}
+				}
+			}
+
 			if cache, ok := stakeAddrs[stake]; ok && cache.Created.Before(time.Now().Add(cacheAge*-1)) {
 				log.Printf("Cache older than %s, let's remove it", cacheAge)
 				delete(stakeAddrs, stake)
