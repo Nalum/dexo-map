@@ -14,20 +14,19 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
-  build:
-    # The type of runner that the job will run on
+  gokart:
+    name: GoKart scanner
     runs-on: ubuntu-latest
-    # Steps represent a sequence of tasks that will be executed as part of the job
+    permissions:
+      contents: read
+      security-events: write
+
     steps:
-    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-    - name: Checkout Code
+    - name: Checkout the code
       uses: actions/checkout@v2
-    - name: Setup Go environment
-      uses: actions/setup-go@v2.1.4
+
     - name: Run GoKart
       uses: kitabisa/gokart-action@v1.0.0
-      with:
-        output: ../results
+
     - name: Upload GoKart results
       uses: github/codeql-action/upload-sarif@v1
