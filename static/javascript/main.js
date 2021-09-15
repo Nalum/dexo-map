@@ -9,10 +9,10 @@ function reset() {
 	document.getElementById('regions').checked = false;
 	document.getElementById('limit_owned').checked = false;
 	document.getElementById('star').value = "0";
-	document.getElementById('stake-address').value = "stake1uydj7egwaj020lstvxctmm67ssyfkxpdcg8tqpsm9f5heug8n0gdz";
+	document.getElementById('cardano-address').value = "";
 
 	Object.keys(filters).forEach(function(k) {
-		document.getElementById(k).value = "0";
+		document.getElementById(k).value = "--";
 	});
 
 	draw();
@@ -58,6 +58,7 @@ var filters = {
 	"satellites": {},
 	"size": {}
 };
+var planetTotal = 0;
 
 ctx.translate(canvas.width / 2, canvas.height / 2);
 
@@ -72,11 +73,15 @@ req.onreadystatechange = function () {
 			if (window.stars[k].luminosity > maxLums) {
 				maxLums = window.stars[k].luminosity;
 			}
+			planetTotal += window.stars[k].planets.length;
 		});
 
+		document.getElementById("planet_total").innerHTML = planetTotal;
 		populateSelects();
 		draw();
-		
+		document.getElementById("start").disabled = false;
+		document.getElementById("start").innerHTML = "Start";
+
 		var anim = setInterval(function () {
 			var as = 0.9877;
 			ctx.scale(as, as);
@@ -90,14 +95,18 @@ req.onreadystatechange = function () {
 };
 req.send(null);
 
-function getStakeDexo(stakeAddress) {
+function getStakeDexo(cardanoAddress) {
+	if (cardanoAddress == "") {
+		cardanoAddress = "stake1uydj7egwaj020lstvxctmm67ssyfkxpdcg8tqpsm9f5heug8n0gdz";
+	}
+
 	var button = document.getElementById("fetch-dexo")
 	button.disabled = true;
 	button.innerHTML = "- Loading -";
 
 	var req = new XMLHttpRequest();
 	req.overrideMimeType("application/json");
-	req.open('GET', '/stake/' + stakeAddress, true);
+	req.open('GET', '/stake/' + cardanoAddress, true);
 
 	req.onreadystatechange = function () {
 		var starSelect = document.getElementById("star");
@@ -106,7 +115,7 @@ function getStakeDexo(stakeAddress) {
 		button.disabled = false;
 
 		Object.keys(filters).forEach(function(k) {
-			document.getElementById(k).value = "0";
+			document.getElementById(k).value = "--";
 		});
 
 		if (req.readyState == 4 && req.status == "200") {
@@ -259,10 +268,12 @@ function updateStarSelect() {
 	}
 
 	document.getElementById("planet_count").innerHTML = planetCount;
+	document.getElementById("planet_percent").innerHTML = (planetCount/planetTotal*100).toFixed(4);
 }
 
 function paintFocused(filter) {
 	var selected = document.getElementById("star").selectedOptions;
+	var showNames = document.getElementById("names").checked;
 
 	for (i = 0; i < selected.length; i++) {
 		if (selected[i].value != "0") {
@@ -276,7 +287,15 @@ function paintFocused(filter) {
 			ctx.lineWidth = 40;
 			ctx.stroke();
 
-			nameStar(x,y,data[0] + " #" + data[1], window.stars[data[1]].planets, filter);
+			if (showNames) {
+				nameStar(x,y,data[0] + " #" + data[1], window.stars[data[1]].planets, filter);
+			} else {
+				ctx.beginPath();
+				ctx.ellipse(x, y, size+50, size+50, 0, 0, Math.PI * 2.0);
+				ctx.strokeStyle = base3;
+				ctx.lineWidth = 40;
+				ctx.stroke();
+			}
 		}
 	}
 }
@@ -425,11 +444,11 @@ function generateFilterString(planet) {
 	var satellites = typeof planet !== "undefined" ? planet.satellites : document.getElementById("satellites").value;
 	var size = typeof planet !== "undefined" ? planet.size : document.getElementById("size").value;
 
-	if (document.getElementById("bg_star_color").value != "0") {
+	if (document.getElementById("bg_star_color").value != "--") {
 		filterString += bg_star_color;
 	}
 
-	if (document.getElementById("color").value != "0") {
+	if (document.getElementById("color").value != "--") {
 		if (filterString.length > 0) {
 			filterString += "|";
 		}
@@ -437,7 +456,7 @@ function generateFilterString(planet) {
 		filterString += color;
 	}
 
-	if (document.getElementById("composition").value != "0") {
+	if (document.getElementById("composition").value != "--") {
 		if (filterString.length > 0) {
 			filterString += "|";
 		}
@@ -445,7 +464,7 @@ function generateFilterString(planet) {
 		filterString += composition;
 	}
 
-	if (document.getElementById("large_satellites").value != "0") {
+	if (document.getElementById("large_satellites").value != "--") {
 		if (filterString.length > 0) {
 			filterString += "|";
 		}
@@ -453,7 +472,7 @@ function generateFilterString(planet) {
 		filterString += large_satellites;
 	}
 
-	if (document.getElementById("life").value != "0") {
+	if (document.getElementById("life").value != "--") {
 		if (filterString.length > 0) {
 			filterString += "|";
 		}
@@ -461,7 +480,7 @@ function generateFilterString(planet) {
 		filterString += life;
 	}
 
-	if (document.getElementById("planetary_position").value != "0") {
+	if (document.getElementById("planetary_position").value != "--") {
 		if (filterString.length > 0) {
 			filterString += "|";
 		}
@@ -469,7 +488,7 @@ function generateFilterString(planet) {
 		filterString += planetary_position;
 	}
 
-	if (document.getElementById("research_impact").value != "0") {
+	if (document.getElementById("research_impact").value != "--") {
 		if (filterString.length > 0) {
 			filterString += "|";
 		}
@@ -477,7 +496,7 @@ function generateFilterString(planet) {
 		filterString += research_impact;
 	}
 
-	if (document.getElementById("rings").value != "0") {
+	if (document.getElementById("rings").value != "--") {
 		if (filterString.length > 0) {
 			filterString += "|";
 		}
@@ -485,7 +504,7 @@ function generateFilterString(planet) {
 		filterString += rings;
 	}
 
-	if (document.getElementById("rings_color").value != "0") {
+	if (document.getElementById("rings_color").value != "--") {
 		if (filterString.length > 0) {
 			filterString += "|";
 		}
@@ -493,7 +512,7 @@ function generateFilterString(planet) {
 		filterString += rings_color;
 	}
 
-	if (document.getElementById("satellites").value != "0") {
+	if (document.getElementById("satellites").value != "--") {
 		if (filterString.length > 0) {
 			filterString += "|";
 		}
@@ -501,7 +520,7 @@ function generateFilterString(planet) {
 		filterString += satellites;
 	}
 
-	if (document.getElementById("size").value != "0") {
+	if (document.getElementById("size").value != "--") {
 		if (filterString.length > 0) {
 			filterString += "|";
 		}

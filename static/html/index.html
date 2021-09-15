@@ -51,17 +51,20 @@
 					Finally the reset button will reset all options to the defaults.
 				</p>
 				<hr />
-				<button onclick="showHide()">Start</button>
+				<button disabled="true" id="start" onclick="showHide()">- Loading -</button>
 			</section>
 			<section id="form" class="hidden">
 				<h1>OWNED</h1>
 				<hr />
-				<label for="stake-address">Cardano Address: <span class="note">(starting with <code>stake</code> or <code>addr</code>)</span></label>
-				<input type="text" id="stake-address" name="stake-address" value="stake1uydj7egwaj020lstvxctmm67ssyfkxpdcg8tqpsm9f5heug8n0gdz" />
-				<button id="fetch-dexo" onclick="getStakeDexo(document.getElementById('stake-address').value);">Fetch</button>
+				<label for="cardano-address">Cardano Address: <span class="note">(starting with <code>stake</code> or <code>addr</code>)</span></label>
+				<input type="text" id="cardano-address" name="cardano-address" value="" placeholder="stakeXXX or addrXXX" />
+				<button id="fetch-dexo" onclick="getStakeDexo(document.getElementById('cardano-address').value);">Fetch</button>
 				<hr />
 				<h1>HOST STARS</h1>
 				<hr />
+				<input type="checkbox" id="names" name="names" onclick="draw();" />
+				<label for="names">Show Names</label>
+				<br />
 				<input type="checkbox" id="sizes" name="sizes" onclick="draw();" />
 				<label for="sizes">Enable Sizes</label>
 				<br />
@@ -76,42 +79,42 @@
 				<hr />
 				<h1>PLANETS</h1>
 				<hr />
-				<p>Matching Planets: <span id="planet_count">0</span></p>
+				<p>Matching Planets: <span id="planet_count">0</span>/<span id="planet_total"></span> (<span id="planet_percent">0.0000</span>%)</p>
 				<input type="checkbox" id="limit_owned" name="limit_owned" onclick="updateStarSelect();draw();" />
 				<label for="limit_owned">Limit to Owned</label>
 				<br />
 				<label for="bg_star_color">Background Star Color:</label>
-				<select id="bg_star_color" name="bg_star_color" onchange="updateStarSelect();draw();"><option selected value="0">-- Select Color --</option></select>
+				<select id="bg_star_color" name="bg_star_color" onchange="updateStarSelect();draw();"><option selected value="--">-- Select Color --</option></select>
 				<br />
 				<label for="color">Color:</label>
-				<select id="color" name="color" onchange="updateStarSelect();draw();"><option selected value="0">-- Select Color --</option></select>
+				<select id="color" name="color" onchange="updateStarSelect();draw();"><option selected value="--">-- Select Color --</option></select>
 				<br />
 				<label for="composition">Composition:</label>
-				<select id="composition" name="composition" onchange="updateStarSelect();draw();"><option selected value="0">-- Select Composition --</option></select>
+				<select id="composition" name="composition" onchange="updateStarSelect();draw();"><option selected value="--">-- Select Composition --</option></select>
 				<br />
 				<label for="large_satellites">Large Satellites:</label>
-				<select id="large_satellites" name="large_satellites" onchange="updateStarSelect();draw();"><option selected value="0">-- Select Large Satellites --</option></select>
+				<select id="large_satellites" name="large_satellites" onchange="updateStarSelect();draw();"><option selected value="--">-- Select Large Satellites --</option></select>
 				<br />
 				<label for="life">Life:</label>
-				<select id="life" name="life" onchange="updateStarSelect();draw();"><option selected value="0">-- Select Life --</option></select>
+				<select id="life" name="life" onchange="updateStarSelect();draw();"><option selected value="--">-- Select Life --</option></select>
 				<br />
 				<label for="planetary_position">Planetary Position:</label>
-				<select id="planetary_position" name="planetary_position" onchange="updateStarSelect();draw();"><option selected value="0">-- Select Planetary Position --</option></select>
+				<select id="planetary_position" name="planetary_position" onchange="updateStarSelect();draw();"><option selected value="--">-- Select Planetary Position --</option></select>
 				<br />
 				<label for="research_impact">Research Impact:</label>
-				<select id="research_impact" name="research_impact" onchange="updateStarSelect();draw();"><option selected value="0">-- Select Research Impact --</option></select>
+				<select id="research_impact" name="research_impact" onchange="updateStarSelect();draw();"><option selected value="--">-- Select Research Impact --</option></select>
 				<br />
 				<label for="rings">Rings:</label>
-				<select id="rings" name="rings" onchange="updateStarSelect();draw();"><option selected value="0">-- Select Rings --</option></select>
+				<select id="rings" name="rings" onchange="updateStarSelect();draw();"><option selected value="--">-- Select Rings --</option></select>
 				<br />
 				<label for="rings_color">Rings Color:</label>
-				<select id="rings_color" name="rings_color" onchange="updateStarSelect();draw();"><option selected value="0">-- Select Rings Color --</option></select>
+				<select id="rings_color" name="rings_color" onchange="updateStarSelect();draw();"><option selected value="--">-- Select Rings Color --</option></select>
 				<br />
 				<label for="satellites">Satellites:</label>
-				<select id="satellites" name="satellites" onchange="updateStarSelect();draw();"><option selected value="0">-- Select Satellites --</option></select>
+				<select id="satellites" name="satellites" onchange="updateStarSelect();draw();"><option selected value="--">-- Select Satellites --</option></select>
 				<br />
 				<label for="size">Size:</label>
-				<select id="size" name="size" onchange="updateStarSelect();draw();"><option selected value="0">-- Select Size --</option></select>
+				<select id="size" name="size" onchange="updateStarSelect();draw();"><option selected value="--">-- Select Size --</option></select>
 				<hr />
 				<button id="reset" onclick="reset();">Reset</button>
 				<button onclick="showHide()">How To</button>
