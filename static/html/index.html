@@ -62,65 +62,74 @@
 				<hr />
 				<h1>HOST STARS</h1>
 				<hr />
-				<input type="checkbox" id="names" name="names" onclick="draw();" />
+				<input type="checkbox" id="names" name="names" onclick="galaxyCtx.draw();" />
 				<label for="names">Show Names</label>
 				<br />
-				<input type="checkbox" id="sizes" name="sizes" onclick="draw();" />
+				<input type="checkbox" id="sizes" name="sizes" onclick="galaxyCtx.draw();" />
 				<label for="sizes">Enable Sizes</label>
 				<br />
-				<input type="checkbox" id="alpha" name="alpha" onclick="draw();" />
+				<input type="checkbox" id="alpha" name="alpha" onclick="galaxyCtx.draw();" />
 				<label for="alpha">Enable Luminosity</label>
 				<br />
-				<input type="checkbox" id="regions" name="regions" onclick="draw();" />
+				<input type="checkbox" id="regions" name="regions" onclick="galaxyCtx.draw();" />
 				<label for="regions">Enable Regions</label>
 				<br />
 				<label for="star">Star:</label>
-				<select id="star" name="star" size="10" multiple onchange="draw();"><option selected value="0">-- Select Star --</option></select>
+				<select id="star" name="star" size="10" multiple onchange="galaxyCtx.draw();"><option selected value="0">-- Select Star --</option></select>
 				<hr />
 				<h1>PLANETS</h1>
 				<hr />
 				<p>Matching Planets: <span id="planet_count">0</span>/<span id="planet_total"></span> (<span id="planet_percent">0.0000</span>%)</p>
-				<input type="checkbox" id="limit_owned" name="limit_owned" onclick="updateStarSelect();draw();" />
+				<input type="checkbox" id="limit_owned" name="limit_owned" onclick="updateStarSelect();galaxyCtx.draw();" />
 				<label for="limit_owned">Limit to Owned</label>
 				<br />
 				<label for="bg_star_color">Background Star Color:</label>
-				<select id="bg_star_color" name="bg_star_color" onchange="updateStarSelect();draw();"><option selected value="--">-- Select Color --</option></select>
+				<select id="bg_star_color" name="bg_star_color" onchange="updateStarSelect();galaxyCtx.draw();"><option selected value="--">-- Select Color --</option></select>
 				<br />
 				<label for="color">Color:</label>
-				<select id="color" name="color" onchange="updateStarSelect();draw();"><option selected value="--">-- Select Color --</option></select>
+				<select id="color" name="color" onchange="updateStarSelect();galaxyCtx.draw();"><option selected value="--">-- Select Color --</option></select>
 				<br />
 				<label for="composition">Composition:</label>
-				<select id="composition" name="composition" onchange="updateStarSelect();draw();"><option selected value="--">-- Select Composition --</option></select>
+				<select id="composition" name="composition" onchange="updateStarSelect();galaxyCtx.draw();"><option selected value="--">-- Select Composition --</option></select>
 				<br />
 				<label for="large_satellites">Large Satellites:</label>
-				<select id="large_satellites" name="large_satellites" onchange="updateStarSelect();draw();"><option selected value="--">-- Select Large Satellites --</option></select>
+				<select id="large_satellites" name="large_satellites" onchange="updateStarSelect();galaxyCtx.draw();"><option selected value="--">-- Select Large Satellites --</option></select>
 				<br />
 				<label for="life">Life:</label>
-				<select id="life" name="life" onchange="updateStarSelect();draw();"><option selected value="--">-- Select Life --</option></select>
+				<select id="life" name="life" onchange="updateStarSelect();galaxyCtx.draw();"><option selected value="--">-- Select Life --</option></select>
 				<br />
 				<label for="planetary_position">Planetary Position:</label>
-				<select id="planetary_position" name="planetary_position" onchange="updateStarSelect();draw();"><option selected value="--">-- Select Planetary Position --</option></select>
+				<select id="planetary_position" name="planetary_position" onchange="updateStarSelect();galaxyCtx.draw();"><option selected value="--">-- Select Planetary Position --</option></select>
 				<br />
 				<label for="research_impact">Research Impact:</label>
-				<select id="research_impact" name="research_impact" onchange="updateStarSelect();draw();"><option selected value="--">-- Select Research Impact --</option></select>
+				<select id="research_impact" name="research_impact" onchange="updateStarSelect();galaxyCtx.draw();"><option selected value="--">-- Select Research Impact --</option></select>
 				<br />
 				<label for="rings">Rings:</label>
-				<select id="rings" name="rings" onchange="updateStarSelect();draw();"><option selected value="--">-- Select Rings --</option></select>
+				<select id="rings" name="rings" onchange="updateStarSelect();galaxyCtx.draw();"><option selected value="--">-- Select Rings --</option></select>
 				<br />
 				<label for="rings_color">Rings Color:</label>
-				<select id="rings_color" name="rings_color" onchange="updateStarSelect();draw();"><option selected value="--">-- Select Rings Color --</option></select>
+				<select id="rings_color" name="rings_color" onchange="updateStarSelect();galaxyCtx.draw();"><option selected value="--">-- Select Rings Color --</option></select>
 				<br />
 				<label for="satellites">Satellites:</label>
-				<select id="satellites" name="satellites" onchange="updateStarSelect();draw();"><option selected value="--">-- Select Satellites --</option></select>
+				<select id="satellites" name="satellites" onchange="updateStarSelect();galaxyCtx.draw();"><option selected value="--">-- Select Satellites --</option></select>
 				<br />
 				<label for="size">Size:</label>
-				<select id="size" name="size" onchange="updateStarSelect();draw();"><option selected value="--">-- Select Size --</option></select>
+				<select id="size" name="size" onchange="updateStarSelect();galaxyCtx.draw();"><option selected value="--">-- Select Size --</option></select>
 				<hr />
 				<button id="reset" onclick="reset();">Reset</button>
 				<button onclick="showHide()">How To</button>
 			</section>
 		</section>
-		<section id="map"><canvas id="galaxy" width="900" height="1000"></canvas></section>
+		<section id="map">
+			<canvas id="galaxy" width="900" height="800"></canvas>
+			<section id="system_controls">
+				<button id="previous" onclick="that = document.getElementById('star_system_id'); that.stepDown();starSystem = stars[that.value];setStarSelect(that.value);starCtx.draw();">&laquo;</button>
+				Switch between Star Systems
+				<input type="number" id="star_system_id" min="1" max="2500" value="1" onchange="starSystem = stars[this.value];setStarSelect(this.value);starCtx.draw();" />
+				<button id="next" onclick="that = document.getElementById('star_system_id'); that.stepUp();starSystem = stars[that.value];setStarSelect(that.value);starCtx.draw();">&raquo;</button>
+			</section>
+			<canvas id="star_system" width="900" height="300"></canvas>
+		</section>
 	</main>
 
 	<footer>
@@ -132,6 +141,7 @@
 		</section>
 	</footer>
 
+	<script type="text/javascript" src="/static/javascript/starSystem.js"></script>
 	<script type="text/javascript" src="/static/javascript/main.js"></script>
 </body>
 

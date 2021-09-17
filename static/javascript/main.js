@@ -15,7 +15,8 @@ function reset() {
 		document.getElementById(k).value = "--";
 	});
 
-	draw();
+	galaxyCtx.draw();
+	starCtx.draw();
 }
 
 const base03 = "#002b36";
@@ -35,10 +36,14 @@ const blue = "#268bd2";
 const cyan = "#2aa198";
 const green = "#859900";
 
-const canvas = document.getElementById("galaxy");
-const ctx = canvas.getContext("2d");
+const galaxyCanvas = document.getElementById("galaxy");
+const galaxyCtx = galaxyCanvas.getContext("2d");
+const starCanvas = document.getElementById("star_system");
+const starCtx = starCanvas.getContext("2d");
 const scaleFactor = 1.1;
 const RSol = 100;
+const AU = RSol * 100;
+var starSystem = null;
 var scale = 50;
 var translation = 0;
 var stars = null;
@@ -60,7 +65,163 @@ var filters = {
 };
 var planetTotal = 0;
 
-ctx.translate(canvas.width / 2, canvas.height / 2);
+galaxyCtx.translate(galaxyCanvas.width / 2, galaxyCanvas.height / 2);
+galaxyCtx.draw = function () {
+	this.clearRect(-this.canvas.width * 1000, -this.canvas.width * 1000, this.canvas.width * 2000, this.canvas.width * 2000);
+
+	if (window.stars !== null) {
+		paintTheStars(this);
+		paintFocused(this, generateFilterString());
+	}
+}
+
+starCtx.translate(starCanvas.width / 2, starCanvas.height / 2);
+starCtx.draw = function () {
+	var ctx = this;
+	ctx.clearRect(-ctx.canvas.width * 100000000000, -ctx.canvas.width * 100000000000, ctx.canvas.width * 200000000000, ctx.canvas.width * 200000000000);
+	var starData = document.getElementById("star_name")
+
+	if (window.stars !== null) {
+		if (window.starSystem !== null) {
+			var starSize = RSol*window.starSystem.radius;
+			var zoneStart = parseFloat(window.starSystem.habitable_zone.split(" - ")[0]);
+			var zoneEnd = parseFloat(window.starSystem.habitable_zone.split(" - ")[1]);
+			var zoneStartSize = ((AU * zoneStart) * Math.LOG10E) + starSize;
+			var zoneEndSize = ((AU * zoneEnd) * Math.LOG10E) + starSize;
+
+			if (zoneStart < zoneEnd) {
+				ctx.beginPath();
+				ctx.ellipse(0, 0, zoneEndSize, zoneEndSize, 0, 0, Math.PI * 2);
+				ctx.fillStyle = "rgba(133, 153, 0, 0.1)";
+				ctx.fill();
+
+				ctx.beginPath();
+				ctx.font = "bold 15px Ariel";
+				ctx.fillStyle = violet;
+				ctx.fillText("Habitable Zone", zoneStartSize + 6, -40);
+
+				ctx.beginPath();
+				ctx.ellipse(0, 0, zoneStartSize, zoneStartSize, 0, 0, Math.PI * 2);
+				ctx.fillStyle = "#00121D";
+				ctx.fill();
+			}
+
+			ctx.beginPath();
+			ctx.ellipse(0, 0, starSize, starSize, 0, 0, Math.PI*2);
+			ctx.fillStyle = starColor(window.starSystem.color.join("_"), 1);
+			ctx.fill();
+
+			displayStarSystemInfo(ctx, starSize);
+
+			window.starSystem.planets.forEach(function(planet, i) {
+				var semimajor_axis = isNaN(parseFloat(planet.semimajor_axis)) ? 0.01 : parseFloat(planet.semimajor_axis);
+				var x = ((AU * semimajor_axis) * Math.LOG10E) + starSize;
+				var lineWidth = 50*semimajor_axis
+
+				if (planet.color == "rainbow") {
+					ctx.beginPath();
+					ctx.ellipse(0, 0, x, x, 0, 0, Math.PI * 2);
+					ctx.strokeStyle = yellow;
+					ctx.lineWidth = lineWidth;
+					ctx.stroke();
+		
+					ctx.beginPath();
+					ctx.ellipse(0, 0, x, x, 0, 0, Math.PI * 1.75);
+					ctx.strokeStyle = orange;
+					ctx.lineWidth = lineWidth;
+					ctx.stroke();
+		
+					ctx.beginPath();
+					ctx.ellipse(0, 0, x, x, 0, 0, Math.PI * 1.5);
+					ctx.strokeStyle = red;
+					ctx.lineWidth = lineWidth;
+					ctx.stroke();
+		
+					ctx.beginPath();
+					ctx.ellipse(0, 0, x, x, 0, 0, Math.PI * 1.25);
+					ctx.strokeStyle = magenta;
+					ctx.lineWidth = lineWidth;
+					ctx.stroke();
+		
+					ctx.beginPath();
+					ctx.ellipse(0, 0, x, x, 0, 0, Math.PI * 1);
+					ctx.strokeStyle = violet;
+					ctx.lineWidth = lineWidth;
+					ctx.stroke();
+		
+					ctx.beginPath();
+					ctx.ellipse(0, 0, x, x, 0, 0, Math.PI * 0.75);
+					ctx.strokeStyle = blue;
+					ctx.lineWidth = lineWidth;
+					ctx.stroke();
+		
+					ctx.beginPath();
+					ctx.ellipse(0, 0, x, x, 0, 0, Math.PI * 0.5);
+					ctx.strokeStyle = cyan;
+					ctx.lineWidth = lineWidth;
+					ctx.stroke();
+		
+					ctx.beginPath();
+					ctx.ellipse(0, 0, x, x, 0, 0, Math.PI * 0.25);
+					ctx.strokeStyle = green;
+					ctx.lineWidth = lineWidth;
+					ctx.stroke();
+				} else {
+					ctx.beginPath();
+					ctx.ellipse(0, 0, x, x, 0, 0, Math.PI*2);
+					ctx.strokeStyle = planet.color;
+					ctx.lineWidth = lineWidth;
+					ctx.stroke();
+
+					ctx.beginPath();
+					ctx.ellipse(x, 0, lineWidth, lineWidth, 0, 0, Math.PI*2);
+					ctx.fillStyle = planet.color;
+					ctx.fill();
+				}
+
+				displayPlanetInfo(ctx, starSize, planet);
+			});
+		}
+	}
+}
+
+function planetLetter(position) {
+	switch(position.split(" ")[0]) {
+		case "1":
+			return "a"
+		break;
+		case "2":
+			return "b"
+		break;
+		case "3":
+			return "c"
+		break;
+		case "4":
+			return "d"
+		break;
+		case "5":
+			return "e"
+		break;
+		case "6":
+			return "f"
+		break;
+		case "7":
+			return "g"
+		break;
+		case "8":
+			return "h"
+		break;
+		case "9":
+			return "i"
+		break;
+		case "10":
+			return "j"
+		break;
+		case "11":
+			return "k"
+		break;
+	}
+}
 
 var req = new XMLHttpRequest();
 req.overrideMimeType("application/json");
@@ -68,28 +229,31 @@ req.open('GET', '/stars', true);
 req.onreadystatechange = function () {
 	if (req.readyState == 4 && req.status == "200") {
 		window.stars = JSON.parse(req.responseText);
-		
+		window.starSystem = window.stars[document.getElementById("star_system_id").value];
+
 		Object.keys(window.stars).forEach(function (k, i) {
 			if (window.stars[k].luminosity > maxLums) {
 				maxLums = window.stars[k].luminosity;
 			}
+
 			planetTotal += window.stars[k].planets.length;
 		});
 
 		document.getElementById("planet_total").innerHTML = planetTotal;
 		populateSelects();
-		draw();
+		galaxyCtx.draw();
+		starCtx.draw();
 		document.getElementById("start").disabled = false;
 		document.getElementById("start").innerHTML = "Start";
 
-		var anim = setInterval(function () {
-			var as = 0.9877;
-			ctx.scale(as, as);
-			draw();
+		var galaxyAnim = setInterval(function () {
+			var galaxyScale = 0.987;
+			galaxyCtx.scale(galaxyScale, galaxyScale);
+			galaxyCtx.draw();
 		}, 16);
 		
 		setTimeout(function () {
-			clearInterval(anim);
+			clearInterval(galaxyAnim);
 		}, 5300);
 	}
 };
@@ -131,7 +295,8 @@ function getStakeDexo(cardanoAddress) {
 				});
 			});
 
-			draw();
+			galaxyCtx.draw();
+			starCtx.draw();
 		}
 	};
 
@@ -180,16 +345,7 @@ function populateSelects() {
 	});
 }
 
-function draw() {
-	ctx.clearRect(-canvas.width * 1000, -canvas.width * 1000, canvas.width * 2000, canvas.width * 2000);
-
-	if (window.stars !== null) {
-		paintTheStars();
-		paintFocused(generateFilterString());
-	}
-}
-
-function paintTheStars() {
+function paintTheStars(ctx) {
 	Object.keys(window.stars).forEach(function (k, i) {
 		var x = window.stars[k].radial_distance * Math.sin(-window.stars[k].longitude * (Math.PI / 180));
 		var y = -1 * window.stars[k].radial_distance * Math.cos(window.stars[k].longitude * (Math.PI / 180));
@@ -209,16 +365,14 @@ function paintTheStars() {
 		}
 
 		ctx.beginPath();
-		var color = starColor(window.stars[k].color.join("_"), alpha);
-		ctx.fillStyle = color;
+		ctx.fillStyle = starColor(window.stars[k].color.join("_"), alpha);
 		ctx.ellipse(x, y, size, size, 0, 0, Math.PI * 2.0);
 		ctx.fill();
 
 		if (document.getElementById("regions").checked) {
 			ctx.beginPath();
 			ctx.ellipse(x, y, size + 5, size + 5, 0, 0, Math.PI * 2.0);
-			var color = regionColor(window.stars[k].region);
-			ctx.strokeStyle = color;
+			ctx.strokeStyle = regionColor(window.stars[k].region);
 			ctx.lineWidth = 100;
 			ctx.stroke();
 		}
@@ -271,7 +425,7 @@ function updateStarSelect() {
 	document.getElementById("planet_percent").innerHTML = (planetCount/planetTotal*100).toFixed(4);
 }
 
-function paintFocused(filter) {
+function paintFocused(ctx, filter) {
 	var selected = document.getElementById("star").selectedOptions;
 	var showNames = document.getElementById("names").checked;
 
@@ -288,7 +442,7 @@ function paintFocused(filter) {
 			ctx.stroke();
 
 			if (showNames) {
-				nameStar(x,y,data[0] + " #" + data[1], window.stars[data[1]].planets, filter);
+				nameStar(ctx, x, y, data[0] + " #" + data[1], window.stars[data[1]].planets, filter);
 			} else {
 				ctx.beginPath();
 				ctx.ellipse(x, y, size+50, size+50, 0, 0, Math.PI * 2.0);
@@ -300,7 +454,7 @@ function paintFocused(filter) {
 	}
 }
 
-function nameStar(x, y, name, planets, filter) {
+function nameStar(ctx, x, y, name, planets, filter) {
 	var textSize = ctx.measureText(name);
 	var ownedCount = 0;
 	var strokeColor = red;
@@ -582,16 +736,28 @@ function regionColor(region) {
 	}
 }
 
-window.onload = function () {
-	trackTransforms(ctx);
-	draw();
+window.onload = function() {
+	trackTransforms(galaxyCtx);
+	trackTransforms(starCtx);
+	galaxyCtx.draw();
+	starCtx.draw();
+	canvasEvents(galaxyCanvas, galaxyCtx);
+	canvasEvents(starCanvas, starCtx);
+}
 
+function canvasEvents(canvas, ctx) {
 	canvas.addEventListener(
 		"mousedown",
 		function (evt) {
 			document.body.style.mozUserSelect = document.body.style.webkitUserSelect = document.body.style.userSelect = "none";
 			lastX = evt.offsetX - (canvas.width / 2) || (evt.pageX - (canvas.width / 2)) - canvas.offsetLeft;
-			lastY = evt.offsetY - (canvas.width / 2) || (evt.pageY - (canvas.width / 2)) - canvas.offsetTop;
+
+			if (canvas.id === "star_system") {
+				lastY = 0;
+			} else {
+				lastY = evt.offsetY - (canvas.width / 2) || (evt.pageY - (canvas.width / 2)) - canvas.offsetTop;
+			}
+
 			dragStart = ctx.transformedPoint(lastX, lastY);
 			dragged = false;
 			canvas.className = "grabbing";
@@ -603,12 +769,18 @@ window.onload = function () {
 		"mousemove",
 		function (evt) {
 			lastX = evt.offsetX - (canvas.width / 2) || (evt.pageX - (canvas.width / 2)) - canvas.offsetLeft;
-			lastY = evt.offsetY - (canvas.width / 2) || (evt.pageY - (canvas.width / 2)) - canvas.offsetTop;
+
+			if (canvas.id === "star_system") {
+				lastY = 0;
+			} else {
+				lastY = evt.offsetY - (canvas.width / 2) || (evt.pageY - (canvas.width / 2)) - canvas.offsetTop;
+			}
+
 			dragged = true;
 			if (dragStart) {
 				var pt = ctx.transformedPoint(lastX, lastY);
 				ctx.translate(pt.x - dragStart.x, pt.y - dragStart.y);
-				draw();
+				ctx.draw();
 			}
 		},
 		false
@@ -623,31 +795,55 @@ window.onload = function () {
 		false
 	);
 
-	var zoom = function (clicks) {
-		var pt = ctx.transformedPoint(lastX, lastY);
-		ctx.translate(pt.x, pt.y);
-		factor = Math.pow(scaleFactor, clicks);
-		ctx.scale(factor, factor);
-		ctx.translate(-pt.x, -pt.y);
-		draw();
-	};
+	if (ctx.canvas.id === "star_system") {
+		var zoom = function (clicks) {
+			var pt = ctx.transformedPoint(lastX, lastY);
+			ctx.translate(pt.x, 0);
+			factor = Math.pow(scaleFactor, clicks);
+			ctx.scale(factor, factor);
+			ctx.translate(-pt.x, -0);
+			ctx.draw();
+		};
 
-	var handleScroll = function (evt) {
-		var delta = evt.wheelDelta
-			? evt.wheelDelta / 40
-			: evt.detail
-				? -evt.detail
-				: 0;
-		if (delta) zoom(delta);
-		return evt.preventDefault() && false;
-	};
+		var handleScroll = function (evt) {
+			var delta = evt.wheelDelta
+				? evt.wheelDelta / 40
+				: evt.detail
+					? -evt.detail
+					: 0;
+			if (delta) zoom(delta);
+			return evt.preventDefault() && false;
+		};
 
-	canvas.addEventListener("DOMMouseScroll", handleScroll, false);
-	canvas.addEventListener("mousewheel", handleScroll, false);
+		canvas.addEventListener("DOMMouseScroll", handleScroll, false);
+		canvas.addEventListener("mousewheel", handleScroll, false);
+	} else {
+		var zoom = function (clicks) {
+			var pt = ctx.transformedPoint(lastX, lastY);
+			ctx.translate(pt.x, pt.y);
+			factor = Math.pow(scaleFactor, clicks);
+			ctx.scale(factor, factor);
+			ctx.translate(-pt.x, -pt.y);
+			ctx.draw();
+		};
+
+		var handleScroll = function (evt) {
+			var delta = evt.wheelDelta
+				? evt.wheelDelta / 40
+				: evt.detail
+					? -evt.detail
+					: 0;
+			if (delta) zoom(delta);
+			return evt.preventDefault() && false;
+		};
+
+		canvas.addEventListener("DOMMouseScroll", handleScroll, false);
+		canvas.addEventListener("mousewheel", handleScroll, false);
+	}
 };
 
-// Adds ctx.getTransform() - returns an SVGMatrix
-// Adds ctx.transformedPoint(x,y) - returns an SVGPoint
+// Adds galaxyCtx.getTransform() - returns an SVGMatrix
+// Adds galaxyCtx.transformedPoint(x,y) - returns an SVGPoint
 function trackTransforms(ctx) {
 	var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
 	var xform = svg.createSVGMatrix();

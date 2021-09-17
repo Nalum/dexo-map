@@ -94,7 +94,7 @@ main section#data p {
 	margin: 10px 0px;
 }
 
-main section#data button {
+main section button {
 	background-color: #268bd2;
 	border: 4px solid #6c71c4;
 	color: #fdf6e3;
@@ -105,29 +105,37 @@ main section#data button {
 	width: 88px;
 }
 
-main section#data button:disabled {
+main section button:disabled {
 	background-color: #002b36 !important;
 	color: #dc322f !important;
 	cursor: wait !important;
+}
+
+main section#map button {
+	width: 29px;
 }
 
 main section#data select {
 	width: 100%;
 }
 
-main section#data select,
-main section#data input {
+main section select,
+main section input {
 	background-color: #268bd2;
 	border: 4px solid #6c71c4;
 	color: #fdf6e3;
 	font-size: 12px;
 }
 
-main section#data select option,
-main section#data input {
+main section select option,
+main section input {
 	background-color: #268bd2;
 	padding: 2px 4px;
 	margin: 2px 0px;
+}
+
+main section#map input#star_system_id {
+	width: 50px;
 }
 
 main section#data input#cardano-address {
@@ -142,6 +150,25 @@ main section#data select option {
 main section#map {
 	grid-column: 2;
 	width: 900px;
+}
+
+main section#map section#system_controls {
+	margin: 0 auto;
+	width: max-content;
+}
+
+main section#map span#star_name {
+	position: absolute;
+	margin: 5px;
+	padding: 5px;
+	border: 4px solid #002b36;
+	font-size: 12px;
+	background-color: #073642;
+	color: #859900;
+}
+
+main section#map span#star_name strong {
+	color: #268bd2;
 }
 
 main section#map:before {
@@ -161,12 +188,12 @@ main section#map:before {
 	transform: rotate(30deg);
 }
 
-main section#map canvas#galaxy {
+main section#map canvas {
 	background-color: #00121D;
 	margin: 0 auto;
 	cursor: grab;
 }
 
-main section#map canvas#galaxy.grabbing {
+main section#map canvas.grabbing {
 	cursor: grabbing;
 }
