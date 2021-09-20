@@ -128,6 +128,54 @@
 				<input type="number" id="star_system_id" min="1" max="2500" value="1" onchange="starSystem = stars[this.value];setStarSelect(this.value);starCtx.draw();" />
 				<button id="next" onclick="that = document.getElementById('star_system_id'); that.stepUp();starSystem = stars[that.value];setStarSelect(that.value);starCtx.draw();">&raquo;</button>
 			</section>
+			<div id="system_data">
+				<div id="nav">
+					<button id="system_previous" onclick="systemPrevious();">&laquo;</button>
+					<button id="system_next" onclick="systemNext();">&raquo;</button>
+				</div>
+				<div id="star_data" class="hidden">
+					<img src="https://ipfs.dexoworlds.com/ipfs/QmRgJH1Pxz6fcniExmbY9UMHkxyuw2iVH9ZNofNubFE7rd" id="star_image" width="100" height="100"/>
+					<p>Name: <span id="star_id"></span><span id="star_name"></span></p>
+					<p>No. Planets: <span id="star_no_planets"></span></p>
+					<p>Effective Temperature: <span id="star_effective_temperature"></span></p>
+					<p>Luminosity: <span id="star_luminosity"></span></p>
+					<p>Mass: <span id="star_mass"></span></p>
+					<p>Quadrant: <span id="star_quadrant"></span></p>
+					<p>Region: <span id="star_region"></span></p>
+					<p>Sector: <span id="star_sector"></span></p>
+					<p>Spectral Type: <span id="star_spectral_type"></span></p>
+					<p>Color: <span id="star_color"></span></p>
+					<p>Habitable Zone: <span id="star_habitable_zone"></span></p>
+					<p>Longitude: <span id="star_longitude"></span></p>
+					<p>Radial Distance: <span id="star_radial_distance"></span></p>
+					<p>Radius: <span id="star_radius"></span></p>
+				</div>
+				<div id="show_hide_star_data" onclick="togglePanel(this, document.getElementById('show_hide_planet_data'), document.getElementById('star_data'), document.getElementById('planet_data'));">
+					<span class="icon">&raquo;</span>
+					<span class="rotate">STAR</span>
+					<span class="icon">&raquo;</span>
+				</div>
+				<div id="planet_data" class="hidden">
+					<img src="https://ipfs.dexoworlds.com/ipfs/QmRgJH1Pxz6fcniExmbY9UMHkxyuw2iVH9ZNofNubFE7rd" id="planet_image" width="100" height="100"/>
+					<p>Name: <span id="planet_id"></span><span id="planet_name"></span></p>
+					<p>Research Impact: <span id="planet_research_impact"></span></p>
+					<p>Life: <span id="planet_life"></span></p>
+					<p>Size: <span id="planet_size"></span></p>
+					<p>Background Star Color: <span id="planet_background_star_color"></span></p>
+					<p>Color: <span id="planet_color"></span></p>
+					<p>Composition: <span id="planet_composition"></span></p>
+					<p>Rings: <span id="planet_rings"></span></p>
+					<p>Satellites: <span id="planet_satellites"></span></p>
+					<p>Large Satellites: <span id="planet_large_satellites"></span></p>
+					<p>Semimajor Axis: <span id="planet_semimajor_axis"></span></p>
+					<p>Planetary Position: <span id="planet_planetary_position"></span></p>
+				</div>
+				<div id="show_hide_planet_data" onclick="togglePanel(this, document.getElementById('show_hide_star_data'), document.getElementById('planet_data'), document.getElementById('star_data'));">
+					<span class="icon">&raquo;</span>
+					<span class="rotate">PLANETS</span>
+					<span class="icon">&raquo;</span>
+				</div>
+			</div>
 			<canvas id="star_system" width="900" height="300"></canvas>
 		</section>
 	</main>

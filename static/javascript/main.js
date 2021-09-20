@@ -35,7 +35,6 @@ const violet = "#6c71c4";
 const blue = "#268bd2";
 const cyan = "#2aa198";
 const green = "#859900";
-
 const galaxyCanvas = document.getElementById("galaxy");
 const galaxyCtx = galaxyCanvas.getContext("2d");
 const starCanvas = document.getElementById("star_system");
@@ -43,6 +42,20 @@ const starCtx = starCanvas.getContext("2d");
 const scaleFactor = 1.1;
 const RSol = 100;
 const AU = RSol * 100;
+const XS = 0.1;
+const S = 0.15;
+const M = 0.2;
+const L = 0.4;
+const XL = 0.65;
+
+const planetSizes = {
+	"XS": RSol*XS,
+	"S": RSol*S,
+	"M": RSol*M,
+	"L": RSol*L,
+	"XL": RSol*XL,
+};
+
 var starSystem = null;
 var scale = 50;
 var translation = 0;
@@ -79,7 +92,6 @@ starCtx.translate(starCanvas.width / 2, starCanvas.height / 2);
 starCtx.draw = function () {
 	var ctx = this;
 	ctx.clearRect(-ctx.canvas.width * 100000000000, -ctx.canvas.width * 100000000000, ctx.canvas.width * 200000000000, ctx.canvas.width * 200000000000);
-	var starData = document.getElementById("star_name")
 
 	if (window.stars !== null) {
 		if (window.starSystem !== null) {
@@ -111,115 +123,18 @@ starCtx.draw = function () {
 			ctx.fillStyle = starColor(window.starSystem.color.join("_"), 1);
 			ctx.fill();
 
-			displayStarSystemInfo(ctx, starSize);
+			setStarSystemInfo();
+			setPlanetInfo(window.starSystem.planets[systemItem]);
 
 			window.starSystem.planets.forEach(function(planet, i) {
 				var semimajor_axis = isNaN(parseFloat(planet.semimajor_axis)) ? 0.01 : parseFloat(planet.semimajor_axis);
-				var x = ((AU * semimajor_axis) * Math.LOG10E) + starSize;
-				var lineWidth = 50*semimajor_axis
-
-				if (planet.color == "rainbow") {
-					ctx.beginPath();
-					ctx.ellipse(0, 0, x, x, 0, 0, Math.PI * 2);
-					ctx.strokeStyle = yellow;
-					ctx.lineWidth = lineWidth;
-					ctx.stroke();
-		
-					ctx.beginPath();
-					ctx.ellipse(0, 0, x, x, 0, 0, Math.PI * 1.75);
-					ctx.strokeStyle = orange;
-					ctx.lineWidth = lineWidth;
-					ctx.stroke();
-		
-					ctx.beginPath();
-					ctx.ellipse(0, 0, x, x, 0, 0, Math.PI * 1.5);
-					ctx.strokeStyle = red;
-					ctx.lineWidth = lineWidth;
-					ctx.stroke();
-		
-					ctx.beginPath();
-					ctx.ellipse(0, 0, x, x, 0, 0, Math.PI * 1.25);
-					ctx.strokeStyle = magenta;
-					ctx.lineWidth = lineWidth;
-					ctx.stroke();
-		
-					ctx.beginPath();
-					ctx.ellipse(0, 0, x, x, 0, 0, Math.PI * 1);
-					ctx.strokeStyle = violet;
-					ctx.lineWidth = lineWidth;
-					ctx.stroke();
-		
-					ctx.beginPath();
-					ctx.ellipse(0, 0, x, x, 0, 0, Math.PI * 0.75);
-					ctx.strokeStyle = blue;
-					ctx.lineWidth = lineWidth;
-					ctx.stroke();
-		
-					ctx.beginPath();
-					ctx.ellipse(0, 0, x, x, 0, 0, Math.PI * 0.5);
-					ctx.strokeStyle = cyan;
-					ctx.lineWidth = lineWidth;
-					ctx.stroke();
-		
-					ctx.beginPath();
-					ctx.ellipse(0, 0, x, x, 0, 0, Math.PI * 0.25);
-					ctx.strokeStyle = green;
-					ctx.lineWidth = lineWidth;
-					ctx.stroke();
-				} else {
-					ctx.beginPath();
-					ctx.ellipse(0, 0, x, x, 0, 0, Math.PI*2);
-					ctx.strokeStyle = planet.color;
-					ctx.lineWidth = lineWidth;
-					ctx.stroke();
-
-					ctx.beginPath();
-					ctx.ellipse(x, 0, lineWidth, lineWidth, 0, 0, Math.PI*2);
-					ctx.fillStyle = planet.color;
-					ctx.fill();
-				}
-
-				displayPlanetInfo(ctx, starSize, planet);
+				var radius = planetSizes[planet.size];
+				var x = ((AU * semimajor_axis) * Math.LOG10E) + starSize + radius;
+				var lineWidth = 50*semimajor_axis;
+				drawOrbit(ctx, x, lineWidth, planet.color);
+				drawPlanet(ctx, x, 0, radius, planet.color, typeof planet.selected === "undefined" && i===systemItem ? true : planet.selected);
 			});
 		}
-	}
-}
-
-function planetLetter(position) {
-	switch(position.split(" ")[0]) {
-		case "1":
-			return "a"
-		break;
-		case "2":
-			return "b"
-		break;
-		case "3":
-			return "c"
-		break;
-		case "4":
-			return "d"
-		break;
-		case "5":
-			return "e"
-		break;
-		case "6":
-			return "f"
-		break;
-		case "7":
-			return "g"
-		break;
-		case "8":
-			return "h"
-		break;
-		case "9":
-			return "i"
-		break;
-		case "10":
-			return "j"
-		break;
-		case "11":
-			return "k"
-		break;
 	}
 }
 
@@ -231,18 +146,20 @@ req.onreadystatechange = function () {
 		window.stars = JSON.parse(req.responseText);
 		window.starSystem = window.stars[document.getElementById("star_system_id").value];
 
-		Object.keys(window.stars).forEach(function (k, i) {
-			if (window.stars[k].luminosity > maxLums) {
-				maxLums = window.stars[k].luminosity;
+		Object.keys(window.stars).forEach(function (starKey) {
+			if (window.stars[starKey].luminosity > maxLums) {
+				maxLums = window.stars[starKey].luminosity;
 			}
 
-			planetTotal += window.stars[k].planets.length;
+			planetTotal += window.stars[starKey].planets.length;
 		});
 
 		document.getElementById("planet_total").innerHTML = planetTotal;
 		populateSelects();
 		galaxyCtx.draw();
+		galaxyCtx.save();
 		starCtx.draw();
+		starCtx.save();
 		document.getElementById("start").disabled = false;
 		document.getElementById("start").innerHTML = "Start";
 
@@ -510,53 +427,7 @@ function nameStar(ctx, x, y, name, planets, filter) {
 		var planet_filter = generateFilterString(planet);
 		var px = x + 330 + (70*i);
 		var py = y - 205;
-		
-		if (planet.color === "rainbow") {
-			ctx.beginPath();
-			ctx.ellipse(px, py, 25, 25, 0, 0, Math.PI * 2);
-			ctx.fillStyle = yellow;
-			ctx.fill();
-
-			ctx.beginPath();
-			ctx.ellipse(px, py, 25, 25, 0, 0, Math.PI * 1.75);
-			ctx.fillStyle = orange;
-			ctx.fill();
-
-			ctx.beginPath();
-			ctx.ellipse(px, py, 25, 25, 0, 0, Math.PI * 1.5);
-			ctx.fillStyle = red;
-			ctx.fill();
-
-			ctx.beginPath();
-			ctx.ellipse(px, py, 25, 25, 0, 0, Math.PI * 1.25);
-			ctx.fillStyle = magenta;
-			ctx.fill();
-
-			ctx.beginPath();
-			ctx.ellipse(px, py, 25, 25, 0, 0, Math.PI * 1);
-			ctx.fillStyle = violet;
-			ctx.fill();
-
-			ctx.beginPath();
-			ctx.ellipse(px, py, 25, 25, 0, 0, Math.PI * 0.75);
-			ctx.fillStyle = blue;
-			ctx.fill();
-
-			ctx.beginPath();
-			ctx.ellipse(px, py, 25, 25, 0, 0, Math.PI * 0.5);
-			ctx.fillStyle = cyan;
-			ctx.fill();
-
-			ctx.beginPath();
-			ctx.ellipse(px, py, 25, 25, 0, 0, Math.PI * 0.25);
-			ctx.fillStyle = green;
-			ctx.fill();
-		} else {
-			ctx.beginPath();
-			ctx.ellipse(px, py, 25, 25, 0, 0, Math.PI * 2.0);
-			ctx.fillStyle = planet.color;
-			ctx.fill();
-		}
+		drawPlanet(ctx, px, py, 25, planet.color);
 
 		if (planet.owned) {
 			ctx.beginPath();

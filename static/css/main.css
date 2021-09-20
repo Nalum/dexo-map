@@ -57,8 +57,8 @@ footer section {
 main {
 	margin: 10px auto;
 	display: grid;
-	grid-template-columns: 2;
 	gap: 10px;
+	grid-template-columns: 2;
 	grid-auto-rows: minmax(100px, auto);
 }
 
@@ -157,18 +157,79 @@ main section#map section#system_controls {
 	width: max-content;
 }
 
-main section#map span#star_name {
+main section#map div#system_data {
+	display: grid;
+	gap: 5px;
+	grid-template-columns: 5;
+	grid-template-rows: 30px 260px;
 	position: absolute;
-	margin: 5px;
+	margin: 0;
 	padding: 5px;
-	border: 4px solid #002b36;
-	font-size: 12px;
-	background-color: #073642;
-	color: #859900;
+	border-right: 4px solid rgba(0, 43, 54, .75);
+	background-color: rgba(7, 54, 66, .75);
+	height: 300px;
 }
 
-main section#map span#star_name strong {
+main section#map div#system_data div#nav {
+	height: 30px;
+	grid-column-start: 1;
+	grid-column-end: 5;
+}
+
+main section#map div#system_data div#star_data {
+	font-size: 12px;
 	color: #268bd2;
+	min-width: 300px;
+	grid-column: 1;
+}
+
+main section#map div#system_data div#planet_data {
+	font-size: 12px;
+	color: #268bd2;
+	min-width: 300px;
+	grid-column: 3;
+}
+
+main section#map div#system_data div#star_data img,
+main section#map div#system_data div#planet_data img {
+	float: right;
+}
+
+main section#map div#system_data div#show_hide_star_data {
+	grid-column: 2;
+}
+
+main section#map div#system_data div#show_hide_planet_data {
+	grid-column: 4;
+}
+
+main section#map div#system_data div#show_hide_star_data,
+main section#map div#system_data div#show_hide_planet_data {
+	display: inline;
+	vertical-align: middle;
+	font-size: 12px;
+	color: #268bd2;
+	width: 20px;
+	text-align: center;
+	cursor: pointer;
+}
+
+main section#map div#system_data div span.rotate {
+	display: inline;
+	writing-mode: sideways-rl;
+	vertical-align: middle;
+	text-transform: uppercase;
+}
+
+main section#map div#system_data p {
+	margin: 2px;
+}
+
+main section#map div#system_data p span {
+	color: #859900;
+	float: right;
+	margin: 0px 2px;
+	text-transform: capitalize;
 }
 
 main section#map:before {
