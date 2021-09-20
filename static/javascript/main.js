@@ -132,7 +132,7 @@ starCtx.draw = function () {
 				var x = ((AU * semimajor_axis) * Math.LOG10E) + starSize + radius;
 				var lineWidth = 50*semimajor_axis;
 				drawOrbit(ctx, x, lineWidth, planet.color);
-				drawPlanet(ctx, x, 0, radius, planet.color, typeof planet.selected === "undefined" && i===systemItem ? true : planet.selected);
+				drawPlanet(ctx, x, 0, radius, planet.color, typeof planet.owned === "undefined" ? false : planet.owned, typeof planet.selected === "undefined" && i===systemItem ? true : planet.selected);
 			});
 		}
 	}

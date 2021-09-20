@@ -40,6 +40,7 @@ function setPlanetInfo(planet) {
 	document.getElementById("planet_size").innerHTML = planet.size;
 	document.getElementById("planet_semimajor_axis").innerHTML = planet.semimajor_axis;
 	document.getElementById("planet_planetary_position").innerHTML = planet.planetary_position;
+	document.getElementById("planet_owned").innerHTML = typeof planet.owned === "undefined" ? "No" : planet.owned ? "Yes" : "No";
 }
 
 function systemPrevious() {
@@ -105,7 +106,7 @@ function setStarSelect(starID) {
 	galaxyCtx.draw();
 }
 
-function drawPlanet(ctx, px, py, size, color, selected) {
+function drawPlanet(ctx, px, py, size, color, owned, selected) {
 	if (color === "rainbow") {
 		ctx.beginPath();
 		ctx.ellipse(px, py, size, size, 0, 0, Math.PI * 2);
@@ -157,6 +158,14 @@ function drawPlanet(ctx, px, py, size, color, selected) {
 		ctx.beginPath();
 		ctx.ellipse(px, py, size, size, 0, 0, Math.PI * 2.0);
 		ctx.strokeStyle = base3;
+		ctx.lineWidth = owned ? 10 : 5;
+		ctx.stroke();
+	}
+
+	if (owned) {
+		ctx.beginPath();
+		ctx.ellipse(px, py, size, size, 0, 0, Math.PI * 2.0);
+		ctx.strokeStyle = green;
 		ctx.lineWidth = 5;
 		ctx.stroke();
 	}
