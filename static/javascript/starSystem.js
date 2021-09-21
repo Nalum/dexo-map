@@ -158,7 +158,7 @@ function drawPlanet(ctx, px, py, size, color, owned, selected) {
 		ctx.beginPath();
 		ctx.ellipse(px, py, size, size, 0, 0, Math.PI * 2.0);
 		ctx.strokeStyle = base3;
-		ctx.lineWidth = owned ? 10 : 5;
+		ctx.lineWidth = owned ? size/4 : size/8;
 		ctx.stroke();
 	}
 
@@ -166,7 +166,7 @@ function drawPlanet(ctx, px, py, size, color, owned, selected) {
 		ctx.beginPath();
 		ctx.ellipse(px, py, size, size, 0, 0, Math.PI * 2.0);
 		ctx.strokeStyle = green;
-		ctx.lineWidth = 5;
+		ctx.lineWidth = size/8;
 		ctx.stroke();
 	}
 }

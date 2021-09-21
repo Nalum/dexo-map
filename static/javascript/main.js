@@ -40,20 +40,26 @@ const galaxyCtx = galaxyCanvas.getContext("2d");
 const starCanvas = document.getElementById("star_system");
 const starCtx = starCanvas.getContext("2d");
 const scaleFactor = 1.1;
-const RSol = 100;
-const AU = RSol * 100;
-const XS = 0.1;
-const S = 0.15;
-const M = 0.2;
-const L = 0.4;
-const XL = 0.65;
+const systemView = {
+	REarth: 6378.00,
+	RSol: 696000.00,
+	AU: 149597900.00
+};
+const galaxyView = {
+	RSol: 100.00
+};
+const XS = 0.5;
+const S = 1.0;
+const M = 3.0;
+const L = 6.0;
+const XL = 10.0;
 
 const planetSizes = {
-	"XS": RSol*XS,
-	"S": RSol*S,
-	"M": RSol*M,
-	"L": RSol*L,
-	"XL": RSol*XL,
+	"XS": systemView.REarth*XS,
+	"S": systemView.REarth*S,
+	"M": systemView.REarth*M,
+	"L": systemView.REarth*L,
+	"XL": systemView.REarth*XL,
 };
 
 var starSystem = null;
@@ -80,7 +86,7 @@ var planetTotal = 0;
 
 galaxyCtx.translate(galaxyCanvas.width / 2, galaxyCanvas.height / 2);
 galaxyCtx.draw = function () {
-	this.clearRect(-this.canvas.width * 1000, -this.canvas.width * 1000, this.canvas.width * 2000, this.canvas.width * 2000);
+	this.clearRect(-this.canvas.width * 100000000000000, -this.canvas.width * 100000000000000, this.canvas.width * 200000000000000, this.canvas.width * 200000000000000);
 
 	if (window.stars !== null) {
 		paintTheStars(this);
@@ -91,15 +97,15 @@ galaxyCtx.draw = function () {
 starCtx.translate(starCanvas.width / 2, starCanvas.height / 2);
 starCtx.draw = function () {
 	var ctx = this;
-	ctx.clearRect(-ctx.canvas.width * 100000000000, -ctx.canvas.width * 100000000000, ctx.canvas.width * 200000000000, ctx.canvas.width * 200000000000);
+	ctx.clearRect(-ctx.canvas.width * 100000000000000, -ctx.canvas.width * 100000000000000, ctx.canvas.width * 200000000000000, ctx.canvas.width * 200000000000000);
 
 	if (window.stars !== null) {
 		if (window.starSystem !== null) {
-			var starSize = RSol*window.starSystem.radius;
+			var starSize = systemView.RSol*window.starSystem.radius;
 			var zoneStart = parseFloat(window.starSystem.habitable_zone.split(" - ")[0]);
 			var zoneEnd = parseFloat(window.starSystem.habitable_zone.split(" - ")[1]);
-			var zoneStartSize = ((AU * zoneStart) * Math.LOG10E) + starSize;
-			var zoneEndSize = ((AU * zoneEnd) * Math.LOG10E) + starSize;
+			var zoneStartSize = ((systemView.AU * zoneStart) * Math.LOG10E) + starSize;
+			var zoneEndSize = ((systemView.AU * zoneEnd) * Math.LOG10E) + starSize;
 
 			if (zoneStart < zoneEnd) {
 				ctx.beginPath();
@@ -129,9 +135,8 @@ starCtx.draw = function () {
 			window.starSystem.planets.forEach(function(planet, i) {
 				var semimajor_axis = isNaN(parseFloat(planet.semimajor_axis)) ? 0.01 : parseFloat(planet.semimajor_axis);
 				var radius = planetSizes[planet.size];
-				var x = ((AU * semimajor_axis) * Math.LOG10E) + starSize + radius;
-				var lineWidth = 50*semimajor_axis;
-				drawOrbit(ctx, x, lineWidth, planet.color);
+				var x = ((systemView.AU * semimajor_axis) * Math.LOG10E) + starSize + radius;
+				drawOrbit(ctx, x, radius/2, planet.color);
 				drawPlanet(ctx, x, 0, radius, planet.color, typeof planet.owned === "undefined" ? false : planet.owned, typeof planet.selected === "undefined" && i===systemItem ? true : planet.selected);
 			});
 		}
@@ -157,9 +162,7 @@ req.onreadystatechange = function () {
 		document.getElementById("planet_total").innerHTML = planetTotal;
 		populateSelects();
 		galaxyCtx.draw();
-		galaxyCtx.save();
 		starCtx.draw();
-		starCtx.save();
 		document.getElementById("start").disabled = false;
 		document.getElementById("start").innerHTML = "Start";
 
@@ -171,6 +174,16 @@ req.onreadystatechange = function () {
 		
 		setTimeout(function () {
 			clearInterval(galaxyAnim);
+
+			var starAnim = setInterval(function () {
+				var starScale = 0.945;
+				starCtx.scale(starScale, starScale);
+				starCtx.draw();
+			}, 16);
+
+			setTimeout(function () {
+				clearInterval(starAnim);
+			}, 5300);
 		}, 5300);
 	}
 };
@@ -220,20 +233,26 @@ function getStakeDexo(cardanoAddress) {
 	req.send(null);
 }
 
+function galaxyCalcPos(radial_distance, longitude) {
+	return {
+		x: radial_distance * Math.sin(-longitude * (Math.PI / 180)),
+		y: -radial_distance * Math.cos(longitude * (Math.PI / 180))
+	}
+}
+
 function populateSelects() {
 	var select = document.getElementById("star");
 
 	Object.keys(window.stars).forEach(function (k, i) {
-		var x = window.stars[k].radial_distance * Math.sin(-window.stars[k].longitude * (Math.PI / 180));
-		var y = -1 * window.stars[k].radial_distance * Math.cos(window.stars[k].longitude * (Math.PI / 180));
-		var size = RSol;
+		var pos = galaxyCalcPos(window.stars[k].radial_distance, window.stars[k].longitude);
+		var size = galaxyView.RSol;
 
 		if (document.getElementById("sizes").checked) {
-			size = RSol * window.stars[k].radius;
+			size = galaxyView.RSol * window.stars[k].radius;
 		}
 
 		var option = document.createElement("option");
-		option.value = window.stars[k].name + "|" + window.stars[k].star_id + "|" + x + "|" + y + "|" + size + "|" + starColor(window.stars[k].color.join("_"), 1);
+		option.value = window.stars[k].name + "|" + window.stars[k].star_id + "|" + pos.x + "|" + pos.y + "|" + size.toFixed(2) + "|" + starColor(window.stars[k].color.join("_"), 1);
 		option.innerHTML = window.stars[k].name + " #" + window.stars[k].star_id;
 		select.appendChild(option);
 
@@ -264,13 +283,14 @@ function populateSelects() {
 
 function paintTheStars(ctx) {
 	Object.keys(window.stars).forEach(function (k, i) {
-		var x = window.stars[k].radial_distance * Math.sin(-window.stars[k].longitude * (Math.PI / 180));
-		var y = -1 * window.stars[k].radial_distance * Math.cos(window.stars[k].longitude * (Math.PI / 180));
-		var size = RSol;
+		var pos = galaxyCalcPos(window.stars[k].radial_distance, window.stars[k].longitude);
+		// var x = window.stars[k].radial_distance * Math.sin(-window.stars[k].longitude * (Math.PI / 180));
+		// var y = -1 * window.stars[k].radial_distance * Math.cos(window.stars[k].longitude * (Math.PI / 180));
+		var size = galaxyView.RSol;
 		var alpha = 1;
 
 		if (document.getElementById("sizes").checked) {
-			size = RSol * window.stars[k].radius;
+			size = galaxyView.RSol * window.stars[k].radius;
 		}
 
 		if (document.getElementById("alpha").checked) {
@@ -283,12 +303,12 @@ function paintTheStars(ctx) {
 
 		ctx.beginPath();
 		ctx.fillStyle = starColor(window.stars[k].color.join("_"), alpha);
-		ctx.ellipse(x, y, size, size, 0, 0, Math.PI * 2.0);
+		ctx.ellipse(pos.x, pos.y, size, size, 0, 0, Math.PI * 2.0);
 		ctx.fill();
 
 		if (document.getElementById("regions").checked) {
 			ctx.beginPath();
-			ctx.ellipse(x, y, size + 5, size + 5, 0, 0, Math.PI * 2.0);
+			ctx.ellipse(pos.x, pos.y, size + 5, size + 5, 0, 0, Math.PI * 2.0);
 			ctx.strokeStyle = regionColor(window.stars[k].region);
 			ctx.lineWidth = 100;
 			ctx.stroke();
