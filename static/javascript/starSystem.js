@@ -95,14 +95,74 @@ function togglePanel(clicked, other, panel1, panel2) {
 	}
 }
 
+function showHideFilters(clicked) {
+	var filterFetchContainer = document.getElementById("filter_fetch_container");
+	var filterStarContainer = document.getElementById("filter_star_container");
+	var filterPlanetContainer = document.getElementById("filter_planet_container");
+	var filterFetchHeader = document.getElementById("filter_fetch_header");
+	var filterStarHeader = document.getElementById("filter_star_header");
+	var filterPlanetHeader = document.getElementById("filter_planet_header");
+
+	switch (clicked.dataset.target) {
+		case "filter_fetch":
+			showHideFilterSection(
+				filterFetchContainer, filterFetchHeader,
+				filterStarContainer, filterStarHeader,
+				filterPlanetContainer, filterPlanetHeader
+			);
+			break;
+		case "filter_star":
+			showHideFilterSection(
+				filterStarContainer, filterStarHeader,
+				filterFetchContainer, filterFetchHeader,
+				filterPlanetContainer, filterPlanetHeader
+			);
+			break;
+		case "filter_planet":
+			showHideFilterSection(
+				filterPlanetContainer, filterPlanetHeader,
+				filterStarContainer, filterStarHeader,
+				filterFetchContainer, filterFetchHeader
+			);
+			break;
+	}
+}
+
+function showHideFilterSection(clickedContainer, clickedHeader, otherContainer1, otherHeader1, otherContainer2, otherHeader2) {
+	clickedContainer.className = "";
+	otherContainer1.className = "hidden";
+	otherContainer2.className = "hidden";
+
+	clickedHeader.childNodes.forEach(function(node) {
+		if (node.tagName === "SPAN") {
+				node.innerHTML = "&laquo;";
+		}
+	});
+
+	otherHeader1.childNodes.forEach(function(node) {
+		if (node.tagName === "SPAN") {
+				node.innerHTML = "&raquo;";
+		}
+	});
+
+	otherHeader2.childNodes.forEach(function(node) {
+		if (node.tagName === "SPAN") {
+				node.innerHTML = "&raquo;";
+		}
+	});
+}
+
 function setStarSelect(starID) {
-	var starSelect = document.getElementById("star");
+	var starSelect = document.getElementById("filter_star_star");
 	starSelect.value = "--";
+
 	starSelect.childNodes.forEach(function(option) {
 		if (option.value.includes("|"+starID+"|")) {
 			option.selected = true;
 		}
 	});
+
+	starPercentCalc();
 	galaxyCtx.draw();
 }
 

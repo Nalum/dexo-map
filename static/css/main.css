@@ -85,9 +85,11 @@ main section#data hr {
 	border: 2px solid #002b36;
 }
 
+main section#data h1 span.icon,
 main section#data h1 {
 	text-align: center;
 	font-size: 16px;
+	cursor: pointer;
 }
 
 main section#data p {
@@ -108,6 +110,10 @@ main section button {
 main section button:disabled {
 	background-color: #002b36 !important;
 	color: #dc322f !important;
+	cursor: wait !important;
+}
+
+.loading {
 	cursor: wait !important;
 }
 
@@ -133,6 +139,10 @@ main section input {
 	padding: 2px 4px;
 	margin: 2px 0px;
 }
+main section label {
+	margin-top: 4px;
+	display: inline-block;
+}
 
 main section#map input#star_system_id {
 	width: 50px;
@@ -140,6 +150,12 @@ main section#map input#star_system_id {
 
 main section#data input#cardano-address {
 	width: 210px;
+}
+
+main section#data input[type=range] {
+	width: 90%;
+	margin: 2px auto;
+	display: block;
 }
 
 main section#data select option {
@@ -214,11 +230,12 @@ main section#map div#system_data div#show_hide_planet_data {
 	cursor: pointer;
 }
 
-main section#map div#system_data div span.rotate {
+main span.rotate {
 	display: inline;
-	writing-mode: sideways-rl;
+	writing-mode: vertical-rl;
 	vertical-align: middle;
 	text-transform: uppercase;
+	white-space: pre;
 }
 
 main section#map div#system_data p {

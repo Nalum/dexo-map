@@ -1,22 +1,40 @@
 function showHide() {
-	document.getElementById("how-to").className = document.getElementById("how-to").className == "" ? "hidden" : "";
+	document.getElementById("how_to").className = document.getElementById("how_to").className == "" ? "hidden" : "";
 	document.getElementById("form").className = document.getElementById("form").className == "" ? "hidden" : "";
 }
 
 function reset() {
-	document.getElementById('size').checked = false;
-	document.getElementById('alpha').checked = false;
-	document.getElementById('regions').checked = false;
-	document.getElementById('limit_owned').checked = false;
-	document.getElementById('star').value = "0";
-	document.getElementById('cardano-address').value = "";
-
-	Object.keys(filters).forEach(function(k) {
-		document.getElementById(k).value = "--";
-	});
-
+	document.getElementById('filter_fetch_cardano_address').value = "";
+	document.getElementById('filter_star_sizes').checked = false;
+	document.getElementById('filter_star_alpha').checked = false;
+	document.getElementById('filter_star_regions').checked = false;
+	document.getElementById('filter_star_star').value = "--";
+	document.getElementById('filter_planet_limit_owned').checked = false;
+	resetFilters();
 	galaxyCtx.draw();
 	starCtx.draw();
+}
+
+function resetFilters() {
+	Object.keys(filters).forEach(function(key) {
+		document.getElementById(key).value = "--";
+	});
+}
+
+function resetStarFilters() {
+	Object.keys(filters).forEach(function(key) {
+		if (key.indexOf("_star_") === 6) {
+			document.getElementById(key).value = "--";
+		}
+	});
+}
+
+function resetPlanetFilters() {
+	Object.keys(filters).forEach(function(key) {
+		if (key.indexOf("_planet_") === 6) {
+			document.getElementById(key).value = "--";
+		}
+	});
 }
 
 const base03 = "#002b36";
@@ -70,19 +88,30 @@ var lastX = 0, lastY = 0;
 var dragStart, dragged;
 var maxLums = 0.0, minLums = 0.1;
 var filters = {
-	"bg_star_color": {},
-	"color": {},
-	"composition": {},
-	"large_satellites": {},
-	"life": {},
-	"planetary_position": {},
-	"research_impact": {},
-	"rings": {},
-	"rings_color": {},
-	"satellites": {},
-	"size": {}
+	"filter_star_spectral_type": {},
+	"filter_star_color": {},
+	"filter_star_effective_temperature": {},
+	"filter_star_region": {},
+	"filter_star_quadrant": {},
+	"filter_star_sector": {},
+	"filter_star_radius": {},
+	"filter_star_luminosity": {},
+	"filter_star_mass": {},
+	"filter_star_n_planets": {},
+	"filter_planet_bg_star_color": {},
+	"filter_planet_color": {},
+	"filter_planet_composition": {},
+	"filter_planet_large_satellites": {},
+	"filter_planet_life": {},
+	"filter_planet_planetary_position": {},
+	"filter_planet_research_impact": {},
+	"filter_planet_rings": {},
+	"filter_planet_rings_color": {},
+	"filter_planet_satellites": {},
+	"filter_planet_size": {}
 };
 var planetTotal = 0;
+var starTotal = 0;
 
 galaxyCtx.translate(galaxyCanvas.width / 2, galaxyCanvas.height / 2);
 galaxyCtx.draw = function () {
@@ -90,7 +119,7 @@ galaxyCtx.draw = function () {
 
 	if (window.stars !== null) {
 		paintTheStars(this);
-		paintFocused(this, generateFilterString());
+		paintFocused(this, generatePlanetFilterString());
 	}
 }
 
@@ -157,11 +186,15 @@ req.onreadystatechange = function () {
 			}
 
 			planetTotal += window.stars[starKey].planets.length;
+			starTotal += 1;
 		});
 
-		document.getElementById("planet_total").innerHTML = planetTotal;
+		document.getElementById("filter_star_total").innerHTML = starTotal;
+		document.getElementById("filter_planet_total").innerHTML = planetTotal;
 		populateSelects();
 		galaxyCtx.draw();
+		starCtx.scale(0.0001,0.0001);
+		starCtx.translate(0,0);
 		starCtx.draw();
 		document.getElementById("start").disabled = false;
 		document.getElementById("start").innerHTML = "Start";
@@ -174,16 +207,6 @@ req.onreadystatechange = function () {
 		
 		setTimeout(function () {
 			clearInterval(galaxyAnim);
-
-			var starAnim = setInterval(function () {
-				var starScale = 0.945;
-				starCtx.scale(starScale, starScale);
-				starCtx.draw();
-			}, 16);
-
-			setTimeout(function () {
-				clearInterval(starAnim);
-			}, 5300);
 		}, 5300);
 	}
 };
@@ -203,14 +226,11 @@ function getStakeDexo(cardanoAddress) {
 	req.open('GET', '/stake/' + cardanoAddress, true);
 
 	req.onreadystatechange = function () {
-		var starSelect = document.getElementById("star");
-		starSelect.value = "0";
+		var starSelect = document.getElementById("filter_star_star");
+		starSelect.value = "--";
 		button.innerHTML = "Fetch";
 		button.disabled = false;
-
-		Object.keys(filters).forEach(function(k) {
-			document.getElementById(k).value = "--";
-		});
+		resetFilters();
 
 		if (req.readyState == 4 && req.status == "200") {
 			var stakeStars = JSON.parse(req.responseText);
@@ -233,6 +253,14 @@ function getStakeDexo(cardanoAddress) {
 	req.send(null);
 }
 
+function starPercentCalc() {
+	var count = document.getElementById("filter_star_count");
+	var percent = document.getElementById("filter_star_percent");
+	
+	count.innerHTML = document.getElementById("filter_star_star").selectedOptions.length;
+	percent.innerHTML = ((document.getElementById("filter_star_star").selectedOptions.length / starTotal) * 100).toFixed(4);
+}
+
 function galaxyCalcPos(radial_distance, longitude) {
 	return {
 		x: radial_distance * Math.sin(-longitude * (Math.PI / 180)),
@@ -241,13 +269,13 @@ function galaxyCalcPos(radial_distance, longitude) {
 }
 
 function populateSelects() {
-	var select = document.getElementById("star");
+	var select = document.getElementById("filter_star_star");
 
 	Object.keys(window.stars).forEach(function (k, i) {
 		var pos = galaxyCalcPos(window.stars[k].radial_distance, window.stars[k].longitude);
 		var size = galaxyView.RSol;
 
-		if (document.getElementById("sizes").checked) {
+		if (document.getElementById("filter_star_sizes").checked) {
 			size = galaxyView.RSol * window.stars[k].radius;
 		}
 
@@ -256,27 +284,70 @@ function populateSelects() {
 		option.innerHTML = window.stars[k].name + " #" + window.stars[k].star_id;
 		select.appendChild(option);
 
+		filters["filter_star_spectral_type"][window.stars[k].spectral_type] = true;
+		filters["filter_star_color"][window.stars[k].color.join("_")] = true;
+		filters["filter_star_effective_temperature"][window.stars[k].effective_temperature] = true;
+		filters["filter_star_region"][window.stars[k].region] = true;
+		filters["filter_star_quadrant"][window.stars[k].quadrant] = true;
+		filters["filter_star_sector"][window.stars[k].sector] = true;
+		filters["filter_star_radius"][window.stars[k].radius] = true;
+		filters["filter_star_luminosity"][window.stars[k].luminosity] = true;
+		filters["filter_star_mass"][window.stars[k].mass] = true;
+		filters["filter_star_n_planets"][window.stars[k].n_planets] = true;
+
 		window.stars[k].planets.forEach(function(planet) {
-			filters["bg_star_color"][planet.bg_star_color] = true;
-			filters["color"][planet.color] = true;
-			filters["composition"][planet.composition] = true;
-			filters["large_satellites"][planet.large_satellites] = true;
-			filters["life"][planet.life == "" ? "none" : planet.life] = true;
-			filters["planetary_position"][planet.planetary_position[0] + (planet.planetary_position[1] != " " ? planet.planetary_position[1] : "")] = true;
-			filters["research_impact"][planet.research_impact] = true;
-			filters["rings"][planet.rings == "" ? "none" : planet.rings] = true;
-			filters["rings_color"][planet.rings_color == "" ? "none" : planet.rings_color] = true;
-			filters["satellites"][planet.satellites] = true;
-			filters["size"][planet.size] = true;
+			filters["filter_planet_bg_star_color"][planet.bg_star_color] = true;
+			filters["filter_planet_color"][planet.color] = true;
+			filters["filter_planet_composition"][planet.composition] = true;
+			filters["filter_planet_large_satellites"][planet.large_satellites] = true;
+			filters["filter_planet_life"][planet.life == "" ? "none" : planet.life] = true;
+			filters["filter_planet_planetary_position"][planet.planetary_position[0] + (planet.planetary_position[1] != " " ? planet.planetary_position[1] : "")] = true;
+			filters["filter_planet_research_impact"][planet.research_impact] = true;
+			filters["filter_planet_rings"][planet.rings == "" ? "none" : planet.rings] = true;
+			filters["filter_planet_rings_color"][planet.rings_color == "" ? "none" : planet.rings_color] = true;
+			filters["filter_planet_satellites"][planet.satellites] = true;
+			filters["filter_planet_size"][planet.size] = true;
 		});
 	});
 
-	Object.keys(filters).forEach(function(k) {
-		Object.keys(filters[k]).forEach(function(v) {
+	Object.keys(filters).forEach(function(key) {
+		var select = document.getElementById(key);
+
+		Object.keys(filters[key]).forEach(function(v) {
 			var option = document.createElement("option");
 			option.value = v;
 			option.innerHTML = v;
-			document.getElementById(k).appendChild(option);
+			select.appendChild(option);
+		});
+
+		var options = [];
+		var numbers = false;
+
+		select.childNodes.forEach(function (option, key) {
+			if (key > 0) {
+				if (!isNaN(parseFloat(option.value))) {
+					options.push(parseFloat(option.value));
+					numbers = true;
+				} else {
+					options.push(option.value);
+					numbers = false;
+				}
+			}
+		});
+
+		if (numbers) {
+			options.sort(function(a,b) {
+				return a - b;
+			});
+		} else {
+			options.sort();
+		}
+
+		select.childNodes.forEach(function (option, key) {
+			if (key > 0) {
+				option.value = options[key-1];
+				option.innerHTML = options[key-1];
+			}
 		});
 	});
 }
@@ -284,16 +355,14 @@ function populateSelects() {
 function paintTheStars(ctx) {
 	Object.keys(window.stars).forEach(function (k, i) {
 		var pos = galaxyCalcPos(window.stars[k].radial_distance, window.stars[k].longitude);
-		// var x = window.stars[k].radial_distance * Math.sin(-window.stars[k].longitude * (Math.PI / 180));
-		// var y = -1 * window.stars[k].radial_distance * Math.cos(window.stars[k].longitude * (Math.PI / 180));
 		var size = galaxyView.RSol;
 		var alpha = 1;
 
-		if (document.getElementById("sizes").checked) {
+		if (document.getElementById("filter_star_sizes").checked) {
 			size = galaxyView.RSol * window.stars[k].radius;
 		}
 
-		if (document.getElementById("alpha").checked) {
+		if (document.getElementById("filter_star_alpha").checked) {
 			alpha = window.stars[k].luminosity / maxLums;
 
 			if (alpha < minLums) {
@@ -306,7 +375,7 @@ function paintTheStars(ctx) {
 		ctx.ellipse(pos.x, pos.y, size, size, 0, 0, Math.PI * 2.0);
 		ctx.fill();
 
-		if (document.getElementById("regions").checked) {
+		if (document.getElementById("filter_star_regions").checked) {
 			ctx.beginPath();
 			ctx.ellipse(pos.x, pos.y, size + 5, size + 5, 0, 0, Math.PI * 2.0);
 			ctx.strokeStyle = regionColor(window.stars[k].region);
@@ -317,20 +386,67 @@ function paintTheStars(ctx) {
 }
 
 function updateStarSelect() {
-	var filterString = generateFilterString();
+	var starFilterString = generateStarFilterString();
+	var planetFilterString = generatePlanetFilterString();
 	var matchingStars = [];
-	var starSelect = document.getElementById("star");
+	var starSelect = document.getElementById("filter_star_star");
 	var planetCount = 0;
-	var limitOwned = document.getElementById("limit_owned").checked;
-	starSelect.value = "0";
+	var limitOwnedInSystem = document.getElementById("filter_star_limit_owned_in_system").checked;
+	var limitOwnedSystem = document.getElementById("filter_star_limit_owned_system").checked;
+	var limitOwnedPlanets = document.getElementById("filter_planet_limit_owned").checked;
+	starSelect.value = "--";
 
-	if (filterString !== "") {
+	if (starFilterString !== "") {
+		resetPlanetFilters();
+
+		Object.keys(window.stars).forEach(function(starID) {
+			var innerStarFilterString = generateStarFilterString(window.stars[starID]);
+			ownedInSystem = false;
+			ownedSystem = false;
+			ownedPlanetCount = 0;
+
+			window.stars[starID].planets.forEach(function(planet) {
+				if (planet.owned) {
+					ownedPlanetCount++;
+					ownedInSystem = true;
+				}
+			});
+
+			if (ownedPlanetCount === window.stars[starID].n_planets) {
+				ownedSystem = true;
+			}
+
+			if (innerStarFilterString === starFilterString) {
+				if (limitOwnedInSystem) {
+					if (ownedInSystem) {
+						if (matchingStars.indexOf(starID) == -1) {
+							matchingStars.push(starID);
+						}
+					}
+				} else if (limitOwnedSystem) {
+					if (ownedSystem) {
+						if (matchingStars.indexOf(starID) == -1) {
+							matchingStars.push(starID);
+						}
+					}
+				} else {
+					if (matchingStars.indexOf(starID) == -1) {
+						matchingStars.push(starID);
+					}
+				}
+			}
+		});
+	}
+
+	if (planetFilterString !== "") {
+		resetStarFilters();
+
 		Object.keys(window.stars).forEach(function(starID) {
 			window.stars[starID].planets.forEach(function(planet) {
-				var planetFilterString = generateFilterString(planet);
+				var innerPlanetFilterString = generatePlanetFilterString(planet);
 
-				if (filterString === planetFilterString) {
-					if (limitOwned) {
+				if (innerPlanetFilterString === planetFilterString) {
+					if (limitOwnedPlanets) {
 						if (planet.owned) {
 							if (matchingStars.indexOf(planet.host_star.star_id) == -1) {
 								matchingStars.push(planet.host_star.star_id);
@@ -348,23 +464,24 @@ function updateStarSelect() {
 				}
 			});
 		});
-
-		matchingStars.forEach(function(starID) {
-			starSelect.childNodes.forEach(function(option) {
-				if (option.value.includes("|"+starID+"|")) {
-					option.selected = true;
-				}
-			});
-		});
 	}
 
-	document.getElementById("planet_count").innerHTML = planetCount;
-	document.getElementById("planet_percent").innerHTML = (planetCount/planetTotal*100).toFixed(4);
+	matchingStars.forEach(function(starID) {
+		starSelect.childNodes.forEach(function(option) {
+			if (option.value.includes("|"+starID+"|")) {
+				option.selected = true;
+			}
+		});
+	});
+
+	starPercentCalc();
+	document.getElementById("filter_planet_count").innerHTML = planetCount;
+	document.getElementById("filter_planet_percent").innerHTML = ((planetCount/planetTotal)*100).toFixed(4);
 }
 
 function paintFocused(ctx, filter) {
-	var selected = document.getElementById("star").selectedOptions;
-	var showNames = document.getElementById("names").checked;
+	var selected = document.getElementById("filter_star_star").selectedOptions;
+	var showNames = document.getElementById("filter_star_labels").checked;
 
 	for (i = 0; i < selected.length; i++) {
 		if (selected[i].value != "0") {
@@ -444,7 +561,7 @@ function nameStar(ctx, x, y, name, planets, filter) {
 	ctx.fillRect(x+280, y-260, (planets.length*70)+30, 100);
 
 	planets.forEach(function(planet, i) {
-		var planet_filter = generateFilterString(planet);
+		var filter_planet_filter = generatePlanetFilterString(planet);
 		var px = x + 330 + (70*i);
 		var py = y - 205;
 		drawPlanet(ctx, px, py, 25, planet.color);
@@ -458,7 +575,7 @@ function nameStar(ctx, x, y, name, planets, filter) {
 		}
 
 		if (filter != "") {
-			if (filter == planet_filter) {
+			if (filter == filter_planet_filter) {
 				ctx.beginPath();
 				
 				if (planet.owned) {
@@ -475,25 +592,25 @@ function nameStar(ctx, x, y, name, planets, filter) {
 	});
 }
 
-function generateFilterString(planet) {
+function generatePlanetFilterString(planet) {
 	var filterString = "";
-	var bg_star_color = typeof planet !== "undefined" ? planet.bg_star_color : document.getElementById("bg_star_color").value;
-	var color = typeof planet !== "undefined" ? planet.color : document.getElementById("color").value;
-	var composition = typeof planet !== "undefined" ? planet.composition : document.getElementById("composition").value;
-	var large_satellites = typeof planet !== "undefined" ? planet.large_satellites : document.getElementById("large_satellites").value;
-	var life = typeof planet !== "undefined" ? (planet.life === "" ? "none" : planet.life) : document.getElementById("life").value;
-	var planetary_position = typeof planet !== "undefined" ? planet.planetary_position.split(" ")[0] : document.getElementById("planetary_position").value;
-	var research_impact = typeof planet !== "undefined" ? planet.research_impact : document.getElementById("research_impact").value;
-	var rings = typeof planet !== "undefined" ? (planet.rings === "" ? "none" : planet.rings) : document.getElementById("rings").value;
-	var rings_color = typeof planet !== "undefined" ? (planet.rings_color === "" ? "none": planet.rings_color) : document.getElementById("rings_color").value;
-	var satellites = typeof planet !== "undefined" ? planet.satellites : document.getElementById("satellites").value;
-	var size = typeof planet !== "undefined" ? planet.size : document.getElementById("size").value;
+	var bg_star_color = typeof planet !== "undefined" ? planet.bg_star_color : document.getElementById("filter_planet_bg_star_color").value;
+	var color = typeof planet !== "undefined" ? planet.color : document.getElementById("filter_planet_color").value;
+	var composition = typeof planet !== "undefined" ? planet.composition : document.getElementById("filter_planet_composition").value;
+	var large_satellites = typeof planet !== "undefined" ? planet.large_satellites : document.getElementById("filter_planet_large_satellites").value;
+	var life = typeof planet !== "undefined" ? (planet.life === "" ? "none" : planet.life) : document.getElementById("filter_planet_life").value;
+	var planetary_position = typeof planet !== "undefined" ? planet.planetary_position.split(" ")[0] : document.getElementById("filter_planet_planetary_position").value;
+	var research_impact = typeof planet !== "undefined" ? planet.research_impact : document.getElementById("filter_planet_research_impact").value;
+	var rings = typeof planet !== "undefined" ? (planet.rings === "" ? "none" : planet.rings) : document.getElementById("filter_planet_rings").value;
+	var rings_color = typeof planet !== "undefined" ? (planet.rings_color === "" ? "none": planet.rings_color) : document.getElementById("filter_planet_rings_color").value;
+	var satellites = typeof planet !== "undefined" ? planet.satellites : document.getElementById("filter_planet_satellites").value;
+	var size = typeof planet !== "undefined" ? planet.size : document.getElementById("filter_planet_size").value;
 
-	if (document.getElementById("bg_star_color").value != "--") {
+	if (document.getElementById("filter_planet_bg_star_color").value != "--") {
 		filterString += bg_star_color;
 	}
 
-	if (document.getElementById("color").value != "--") {
+	if (document.getElementById("filter_planet_color").value != "--") {
 		if (filterString.length > 0) {
 			filterString += "|";
 		}
@@ -501,7 +618,7 @@ function generateFilterString(planet) {
 		filterString += color;
 	}
 
-	if (document.getElementById("composition").value != "--") {
+	if (document.getElementById("filter_planet_composition").value != "--") {
 		if (filterString.length > 0) {
 			filterString += "|";
 		}
@@ -509,7 +626,7 @@ function generateFilterString(planet) {
 		filterString += composition;
 	}
 
-	if (document.getElementById("large_satellites").value != "--") {
+	if (document.getElementById("filter_planet_large_satellites").value != "--") {
 		if (filterString.length > 0) {
 			filterString += "|";
 		}
@@ -517,7 +634,7 @@ function generateFilterString(planet) {
 		filterString += large_satellites;
 	}
 
-	if (document.getElementById("life").value != "--") {
+	if (document.getElementById("filter_planet_life").value != "--") {
 		if (filterString.length > 0) {
 			filterString += "|";
 		}
@@ -525,7 +642,7 @@ function generateFilterString(planet) {
 		filterString += life;
 	}
 
-	if (document.getElementById("planetary_position").value != "--") {
+	if (document.getElementById("filter_planet_planetary_position").value != "--") {
 		if (filterString.length > 0) {
 			filterString += "|";
 		}
@@ -533,7 +650,7 @@ function generateFilterString(planet) {
 		filterString += planetary_position;
 	}
 
-	if (document.getElementById("research_impact").value != "--") {
+	if (document.getElementById("filter_planet_research_impact").value != "--") {
 		if (filterString.length > 0) {
 			filterString += "|";
 		}
@@ -541,7 +658,7 @@ function generateFilterString(planet) {
 		filterString += research_impact;
 	}
 
-	if (document.getElementById("rings").value != "--") {
+	if (document.getElementById("filter_planet_rings").value != "--") {
 		if (filterString.length > 0) {
 			filterString += "|";
 		}
@@ -549,7 +666,7 @@ function generateFilterString(planet) {
 		filterString += rings;
 	}
 
-	if (document.getElementById("rings_color").value != "--") {
+	if (document.getElementById("filter_planet_rings_color").value != "--") {
 		if (filterString.length > 0) {
 			filterString += "|";
 		}
@@ -557,7 +674,7 @@ function generateFilterString(planet) {
 		filterString += rings_color;
 	}
 
-	if (document.getElementById("satellites").value != "--") {
+	if (document.getElementById("filter_planet_satellites").value != "--") {
 		if (filterString.length > 0) {
 			filterString += "|";
 		}
@@ -565,12 +682,104 @@ function generateFilterString(planet) {
 		filterString += satellites;
 	}
 
-	if (document.getElementById("size").value != "--") {
+	if (document.getElementById("filter_planet_size").value != "--") {
 		if (filterString.length > 0) {
 			filterString += "|";
 		}
 
 		filterString += size;
+	}
+
+	return filterString;
+}
+
+function generateStarFilterString(star) {
+	var filterString = "";
+	var spectral_type = typeof star !== "undefined" ? star.spectral_type : document.getElementById("filter_star_spectral_type").value;
+	var color = typeof star !== "undefined" ? star.color.join("_") : document.getElementById("filter_star_color").value;
+	var effective_temperature = typeof star !== "undefined" ? star.effective_temperature : document.getElementById("filter_star_effective_temperature").value;
+	var region = typeof star !== "undefined" ? star.region : document.getElementById("filter_star_region").value;
+	var quadrant = typeof star !== "undefined" ? star.quadrant : document.getElementById("filter_star_quadrant").value;
+	var sector = typeof star !== "undefined" ? star.sector : document.getElementById("filter_star_sector").value;
+	var radius = typeof star !== "undefined" ? star.radius : document.getElementById("filter_star_radius").value;
+	var luminosity = typeof star !== "undefined" ? star.luminosity : document.getElementById("filter_star_luminosity").value;
+	var mass = typeof star !== "undefined" ? star.mass : document.getElementById("filter_star_mass").value;
+	var n_planets = typeof star !== "undefined" ? star.n_planets : document.getElementById("filter_star_n_planets").value;
+
+	if (document.getElementById("filter_star_spectral_type").value != "--") {
+		filterString += spectral_type;
+	}
+
+	if (document.getElementById("filter_star_color").value != "--") {
+		if (filterString.length > 0) {
+			filterString += "|";
+		}
+
+		filterString += color;
+	}
+
+	if (document.getElementById("filter_star_effective_temperature").value != "--") {
+		if (filterString.length > 0) {
+			filterString += "|";
+		}
+
+		filterString += effective_temperature;
+	}
+
+	if (document.getElementById("filter_star_region").value != "--") {
+		if (filterString.length > 0) {
+			filterString += "|";
+		}
+
+		filterString += region;
+	}
+
+	if (document.getElementById("filter_star_quadrant").value != "--") {
+		if (filterString.length > 0) {
+			filterString += "|";
+		}
+
+		filterString += quadrant;
+	}
+
+	if (document.getElementById("filter_star_sector").value != "--") {
+		if (filterString.length > 0) {
+			filterString += "|";
+		}
+
+		filterString += sector;
+	}
+
+	if (document.getElementById("filter_star_radius").value != "--") {
+		if (filterString.length > 0) {
+			filterString += "|";
+		}
+
+		filterString += radius;
+	}
+
+	if (document.getElementById("filter_star_luminosity").value != "--") {
+		if (filterString.length > 0) {
+			filterString += "|";
+		}
+
+		filterString += luminosity;
+	}
+
+	if (document.getElementById("filter_star_mass").value != "--") {
+		if (filterString.length > 0) {
+			filterString += "|";
+		}
+
+		filterString += mass;
+	}
+
+	if (document.getElementById("filter_star_n_planets").value != "--") {
+		if (filterString.length > 0) {
+			filterString += "|";
+		}
+
+		filterString += n_planets;
 	}
 
 	return filterString;
@@ -668,6 +877,7 @@ function canvasEvents(canvas, ctx) {
 			}
 
 			dragged = true;
+
 			if (dragStart) {
 				var pt = ctx.transformedPoint(lastX, lastY);
 				ctx.translate(pt.x - dragStart.x, pt.y - dragStart.y);
@@ -686,51 +896,38 @@ function canvasEvents(canvas, ctx) {
 		false
 	);
 
-	if (ctx.canvas.id === "star_system") {
-		var zoom = function (clicks) {
-			var pt = ctx.transformedPoint(lastX, lastY);
+	var zoom = function (clicks) {
+		var pt = ctx.transformedPoint(lastX, lastY);
+		if (ctx.canvas.id === "star_system") {
 			ctx.translate(pt.x, 0);
-			factor = Math.pow(scaleFactor, clicks);
-			ctx.scale(factor, factor);
-			ctx.translate(-pt.x, -0);
-			ctx.draw();
-		};
-
-		var handleScroll = function (evt) {
-			var delta = evt.wheelDelta
-				? evt.wheelDelta / 40
-				: evt.detail
-					? -evt.detail
-					: 0;
-			if (delta) zoom(delta);
-			return evt.preventDefault() && false;
-		};
-
-		canvas.addEventListener("DOMMouseScroll", handleScroll, false);
-		canvas.addEventListener("mousewheel", handleScroll, false);
-	} else {
-		var zoom = function (clicks) {
-			var pt = ctx.transformedPoint(lastX, lastY);
+		} else {
 			ctx.translate(pt.x, pt.y);
-			factor = Math.pow(scaleFactor, clicks);
-			ctx.scale(factor, factor);
+		}
+
+		factor = Math.pow(scaleFactor, clicks);
+		ctx.scale(factor, factor);
+
+		if (ctx.canvas.id === "star_system") {
+			ctx.translate(-pt.x, -0);
+		} else {
 			ctx.translate(-pt.x, -pt.y);
-			ctx.draw();
-		};
+		}
 
-		var handleScroll = function (evt) {
-			var delta = evt.wheelDelta
-				? evt.wheelDelta / 40
-				: evt.detail
-					? -evt.detail
-					: 0;
-			if (delta) zoom(delta);
-			return evt.preventDefault() && false;
-		};
+		ctx.draw();
+	};
 
-		canvas.addEventListener("DOMMouseScroll", handleScroll, false);
-		canvas.addEventListener("mousewheel", handleScroll, false);
-	}
+	var handleScroll = function (evt) {
+		var delta = evt.wheelDelta
+			? evt.wheelDelta / 40
+			: evt.detail
+				? -evt.detail
+				: 0;
+		if (delta) zoom(delta);
+		return evt.preventDefault() && false;
+	};
+
+	canvas.addEventListener("DOMMouseScroll", handleScroll, false);
+	canvas.addEventListener("mousewheel", handleScroll, false);
 };
 
 // Adds galaxyCtx.getTransform() - returns an SVGMatrix
