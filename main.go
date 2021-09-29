@@ -17,7 +17,9 @@ func main() {
 	static := packr.New("static", "./static")
 
 	router := httprouter.New()
-	router.GET("/", Index(static))
+	router.GET("/", IndexV1(static))
+	router.GET("/v1", IndexV1(static))
+	router.GET("/v2", IndexV2(static))
 	router.GET("/static/*file", Static(static))
 	router.GET("/stake/:stake", Stake(bfKey, static))
 	router.GET("/stars", Stars(static))
