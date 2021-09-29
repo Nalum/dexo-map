@@ -1,6 +1,6 @@
 .PHONY: build deploy clean run
 export CGO_ENABLED=0
-export BLOCKFROST_KEY?=${BLOCKFROST_KEY}
+export BLOCKFROST_KEY?=...
 
 build: clean
 	@packr2 build -o ./bin/dexo-map
