@@ -1,5 +1,6 @@
 .PHONY: build deploy clean run
 export CGO_ENABLED=0
+export BLOCKFROST_KEY?=${BLOCKFROST_KEY}
 
 build: clean
 	@packr2 build -o ./bin/dexo-map
@@ -7,7 +8,7 @@ build: clean
 
 run:
 	@go build -o ./bin/dexo-map
-	@./bin/dexo-map -blockfrost-key G7jISS70G5bgFyW9eHg2qJj7LHjKdTLc
+	@./bin/dexo-map -blockfrost-key ${BLOCKFROST_KEY}
 
 deploy: build
 	@scp ./bin/dexo-map nalum@dexo-map.mallon.ie:/home/nalum/dexo-map
