@@ -116,19 +116,32 @@ window.addEventListener("load", function() {
 	}
 
 	var handleScroll = function (evt) {
+		// Get the delta of our zoom to allow the decision of zooming in or out
 		var delta = evt.wheelDelta
 			? evt.wheelDelta / 40
 			: evt.detail
 				? -evt.detail
 				: 0;
+
+		// Are we zooming in or out?
 		scale += delta >= 0
 			? scale/2
 			: -scale/2;
+
+		// Check if we're between min and max zoom levels
 		scale = scale >= maxZoom
 			? maxZoom
 			:scale <= minZoom
 				? minZoom
 				: scale;
+
+		// recalculate the size and position of the stars based on the new scale
+		Object.keys(function(starID) {
+			stars[starID].calculatePosition();
+			stars[starID].calculateSize();
+		});
+
+		// Stop the default action of scrolling from happening
 		return evt.preventDefault() && false;
 	};
 
@@ -183,6 +196,11 @@ req.addEventListener("load", function () {
 					((this.radial_distance * scales.Parsec) * scale) * Math.sin(-this.longitude * (Math.PI / 180)) + galacticCenter.x,
 					((-this.radial_distance * scales.Parsec) * scale) * Math.cos(this.longitude * (Math.PI / 180)) + galacticCenter.y
 				);
+
+				if (this.item) {
+					this.item.position = point;
+				}
+
 				return point;
 			};
 
@@ -192,7 +210,13 @@ req.addEventListener("load", function () {
 			stars[starID].calculateSize = function() {
 				var radius = (scales.RSol * this.radius) * scale;
 				var size = new paper.Size(radius, radius);
-				return size.width > minStarSize.width ? size : minStarSize;
+				var bounds = size.width > minStarSize.width ? size : minStarSize;
+
+				if (this.item) {
+					this.item.bounds = bounds;
+				}
+
+				return bounds;
 			};
 
 			// Here we are adding the Star to the canvas
@@ -233,43 +257,10 @@ req.addEventListener("load", function () {
 			// onFrame is called 60 times a second (where possible) and is used to resize and
 			// recalculate the position of the stars when the map is dragged or zoomed.
 			stars[starID].item.onFrame = function(event) {
-				// Update the Star position
-				var pos = this.star.calculatePosition();
-				this.setPosition(pos);
-				// Calculate the Star bounds
-				var bounds = new paper.Rectangle({
-					center: pos,
-					size: this.star.calculateSize()
-				});
-
-				// If the bounds have changed let's apply them.
-				if (!this.bounds.equals(bounds)) {
-					this.set({bounds: bounds});
-				}
-
 				// If the Star is no longer in the bounds of the canvas view let's
 				// remove it to reduce the required resources.
 				if (!this.isInside(paper.view.bounds)) {
 					this.remove();
-				} else {
-					// If the Star is still in the bounds we want to check the current scale
-					// and start showing the planets and their orbits around the star
-					if (scale > 9.6626212850337e-7) {
-						var that = this; // refernce the Star
-						stars[this.star.star_id].planets.forEach(function(planet) {
-							// So long as there is no parent we want to add the Planets Orbit to that
-							if (planet.orbit.parent === null) {
-								planet.orbit.addTo(that);
-								console.log(planet);
-							}
-
-							// So long as there is no parent we want to add the Planet to that
-							if (planet.item.parent === null) {
-								planet.item.addTo(that);
-								console.log(planet);
-							}
-						});
-					}
 				}
 			};
 
