@@ -136,9 +136,11 @@ window.addEventListener("load", function() {
 				: scale;
 
 		// recalculate the size and position of the stars based on the new scale
-		Object.keys(function(starID) {
-			stars[starID].calculatePosition();
-			stars[starID].calculateSize();
+		Object.keys(stars).forEach(function(starID) {
+			var star = stars[starID];
+			star.calculatePosition();
+			star.calculateSize();
+			stars[starID] = star;
 		});
 
 		// Stop the default action of scrolling from happening
@@ -179,6 +181,8 @@ req.addEventListener("load", function () {
 
 		// Loop over the star data so that we can build the image.
 		Object.keys(stars).forEach(function (starID) {
+			var star = stars[starID];
+
 			// Getting the max brightness for use in calculating the alpha of the star
 			if (stars[starID].luminosity > maxLums) {
 				maxLums = stars[starID].luminosity;
@@ -198,7 +202,7 @@ req.addEventListener("load", function () {
 				);
 
 				if (this.item) {
-					this.item.position = point;
+					this.item.setPosition(point);
 				}
 
 				return point;
@@ -209,14 +213,20 @@ req.addEventListener("load", function () {
 			// minStarSize is returned if the Stars size is less than it at any given scale.
 			stars[starID].calculateSize = function() {
 				var radius = (scales.RSol * this.radius) * scale;
-				var size = new paper.Size(radius, radius);
-				var bounds = size.width > minStarSize.width ? size : minStarSize;
+				var size = radius > minStarSize.width ? new paper.Size(radius, radius) : minStarSize;
 
 				if (this.item) {
-					this.item.bounds = bounds;
+					var bounds = new paper.Rectangle({
+						center: this.item.position,
+						size: size
+					});
+
+					if (!this.item.bounds.equals(bounds)) {
+						this.item.setBounds(bounds);
+					}
 				}
 
-				return bounds;
+				return size;
 			};
 
 			// Here we are adding the Star to the canvas
@@ -254,8 +264,7 @@ req.addEventListener("load", function () {
 				galaxy.className = "";
 			};
 
-			// onFrame is called 60 times a second (where possible) and is used to resize and
-			// recalculate the position of the stars when the map is dragged or zoomed.
+			// onFrame is called 60 times a second (where possible)
 			stars[starID].item.onFrame = function(event) {
 				// If the Star is no longer in the bounds of the canvas view let's
 				// remove it to reduce the required resources.
@@ -269,7 +278,7 @@ req.addEventListener("load", function () {
 
 			// Loop over each Planet and set them up for later use.
 			// Might be a better way of doing this.
-			stars[starID].planets.forEach(function(planet) {
+			stars[starID].planets.forEach(function(planet, index) {
 				// Parse the axis to a float as it is currently a string
 				var semimajor_axis = isNaN(parseFloat(planet.semimajor_axis)) ? 0.01 : parseFloat(planet.semimajor_axis);
 				// Calculate the Planet Radius with current scale
@@ -303,7 +312,10 @@ req.addEventListener("load", function () {
 				// var x = ((systemView.AU * semimajor_axis) * Math.LOG10E) + starSize + radius;
 				// drawOrbit(ctx, x, radius/2, planet.color);
 				// drawPlanet(ctx, x, 0, radius, planet, typeof planet.selected === "undefined" && i===systemItem ? true : planet.selected);
+				star.planets[index] = planet;
 			});
+
+			stars[starID] = star;
 		});
 
 		document.getElementById("filter_star_total").innerHTML = starTotal;
