@@ -36,24 +36,13 @@ const planetSizes = {
 	"XL": scales.REarth*10.0
 };
 
-// Minimum Star Radius allowed;
+// Minimum Star Radius allowed
 const minStarSize = new paper.Size(2,2);
 // Scale will change to show zooming in/out
 var scale = 7e-16;
 const minZoom = 7e-16;
+const planetaryZoom = 5e-13;
 const maxZoom = 0.00012368155244843137;
-
-// Messing around trying to figure out the zoom issue
-var center = new paper.Point(0,0);
-center.radial_distance = 0;
-center.longitude = 0;
-center.calculatePosition = function() {
-	var point = new paper.Point(
-		((this.radial_distance * scales.Parsec) * scale) * Math.sin(-this.longitude * (Math.PI / 180)) + galacticCenter.x,
-		((-this.radial_distance * scales.Parsec) * scale) * Math.cos(this.longitude * (Math.PI / 180)) + galacticCenter.y
-	);
-	return point;
-};
 
 // Offset will be used to allow panning around
 var galacticCenter = new paper.Point(0,0);
@@ -66,6 +55,7 @@ var starTotal = 0;
 var stars;
 var closestStar;
 var currentStar;
+var starSymbols = {};
 
 // Setup an initial event to load the paper canvas
 window.addEventListener("load", function() {
@@ -74,12 +64,10 @@ window.addEventListener("load", function() {
 	with (paper) {
 		// Setup the view so that 0,0 is in the center of the canvas image
 		view.translate(galaxy.width / 2, galaxy.height / 2);
-		// Highlight the center so it's easier to see
-		var centerCircle = Path.Ellipse({
-			center: galacticCenter,
-			radius: 10,
-			strokeColor: 'white'
-		});
+
+		view.onResize = function() {
+			view.translate(view.center.x, view.center.y);
+		};
 
 		view.onMouseDown = function(event) {
 			galaxy.className = "grabbing";
@@ -105,11 +93,14 @@ window.addEventListener("load", function() {
 			// due to being out of bounds.
 			if (typeof stars !== "undefined") {
 				Object.keys(stars).forEach(function(starID) {
-					var pos = stars[starID].calculatePosition();
+					var star = stars[starID];
+					var pos = star.calculatePosition();
 
-					if (paper.view.bounds.contains(pos) && stars[starID].item.parent === null) {
-						stars[starID].item.addTo(paper.project);
+					if (paper.view.bounds.contains(pos) && star.item.parent === null) {
+						star.item.addTo(paper.project);
 					}
+
+					stars[starID] = star;
 				});
 			}
 		}
@@ -179,23 +170,54 @@ req.addEventListener("load", function () {
 	if (req.readyState == 4 && req.status == "200") {
 		stars = JSON.parse(req.responseText);
 
-		// Loop over the star data so that we can build the image.
+		// Loop over the star data to create symbols for each star color
 		Object.keys(stars).forEach(function (starID) {
 			var star = stars[starID];
+			var color = star.color.join("_");
+
+			// Here we are adding the Star to the canvas
+			if (typeof starSymbols[color] === "undefined") {
+				var ellipse = new paper.Path.Ellipse({
+					center: new paper.Point(0,0),
+					radius: minStarSize
+				});
+
+				// This is calculating the stars color depending on whether there is more than 1
+				if (star.color.length > 1) {
+					ellipse.fillColor = {
+						gradient: {
+							stops: star.color,
+							radial: true
+						},
+						origin: ellipse.position,
+						destination: ellipse.bounds.rightCenter
+					};
+				} else {
+					ellipse.fillColor = star.color;
+				}
+
+				starSymbols[color] = new paper.Symbol(ellipse);
+			}
+		});
+
+		// Loop over the star data so that we can build the image
+		Object.keys(stars).forEach(function (starID) {
+			var star = stars[starID];
+			var color = star.color.join("_");
 
 			// Getting the max brightness for use in calculating the alpha of the star
-			if (stars[starID].luminosity > maxLums) {
-				maxLums = stars[starID].luminosity;
+			if (star.luminosity > maxLums) {
+				maxLums = star.luminosity;
 			}
 
 			// Add up the total number of planets
-			planetTotal += stars[starID].planets.length;
+			planetTotal += star.planets.length;
 			// Add up the total number of stars
 			starTotal += 1;
 
 			// calculatePosition is used to position the Star correctly relative to the
-			// center of the galaxy and the center of the canvas.
-			stars[starID].calculatePosition = function() {
+			// center of the galaxy and the center of the canvas
+			star.calculatePosition = function() {
 				var point = new paper.Point(
 					((this.radial_distance * scales.Parsec) * scale) * Math.sin(-this.longitude * (Math.PI / 180)) + galacticCenter.x,
 					((-this.radial_distance * scales.Parsec) * scale) * Math.cos(this.longitude * (Math.PI / 180)) + galacticCenter.y
@@ -208,10 +230,10 @@ req.addEventListener("load", function () {
 				return point;
 			};
 
-			// calculateSize uses the radius of the star and multiplies it by the known radius of the sun (Sol).
-			// It is also multiplied by the scale value to scale the star correctly.
-			// minStarSize is returned if the Stars size is less than it at any given scale.
-			stars[starID].calculateSize = function() {
+			// calculateSize uses the radius of the star and multiplies it by the known radius of the sun (Sol)
+			// It is also multiplied by the scale value to scale the star correctly
+			// minStarSize is returned if the Stars size is less than it at any given scale
+			star.calculateSize = function() {
 				var radius = (scales.RSol * this.radius) * scale;
 				var size = radius > minStarSize.width ? new paper.Size(radius, radius) : minStarSize;
 
@@ -230,90 +252,73 @@ req.addEventListener("load", function () {
 			};
 
 			// Here we are adding the Star to the canvas
-			stars[starID].item = new paper.Path.Ellipse({
-				center: stars[starID].calculatePosition(),
-				radius: stars[starID].calculateSize()
-			});
+			star.item = starSymbols[color].place(star.calculatePosition());
+			// star.item.onFrame = star.item.definition.item.onFrame;
 
-			// This is calculating the stars color depending on whether there is more than 1
-			if (stars[starID].color.length > 1) {
-				stars[starID].item.fillColor = {
-					gradient: {
-						stops: stars[starID].color,
-						radial: true
-					},
-					origin: stars[starID].calculatePosition(),
-					destination: stars[starID].item.bounds.rightCenter
-				};
-			} else {
-				stars[starID].item.fillColor = stars[starID].color;
-			}
-
-			// For now if you click on the star it will log the ID to the console.
+			// For now if you click on the star it will log the ID to the console
 			// Want to do more here with selection/info/planet display
-			stars[starID].item.onMouseUp = function() {
+			star.item.onMouseUp = function() {
 				console.log(this.star.star_id);
 			};
 
 			// Do more here but also need to increase the hitbox size to allow easier clicking
-			stars[starID].item.onMouseEnter = function() {
+			star.item.onMouseEnter = function() {
 				galaxy.className = "pointer";
 			};
 
-			stars[starID].item.onMouseLeave = function() {
+			star.item.onMouseLeave = function() {
 				galaxy.className = "";
 			};
 
 			// onFrame is called 60 times a second (where possible)
-			stars[starID].item.onFrame = function(event) {
+			star.item.onFrame = function(event) {
 				// If the Star is no longer in the bounds of the canvas view let's
-				// remove it to reduce the required resources.
+				// remove it to reduce the required resources
 				if (!this.isInside(paper.view.bounds)) {
 					this.remove();
 				}
 			};
 
 			// Add the Star as a reference to item
-			stars[starID].item.star = stars[starID];
+			star.item.star = stars[starID];
 
-			// Loop over each Planet and set them up for later use.
-			// Might be a better way of doing this.
-			stars[starID].planets.forEach(function(planet, index) {
-				// Parse the axis to a float as it is currently a string
-				var semimajor_axis = isNaN(parseFloat(planet.semimajor_axis)) ? 0.01 : parseFloat(planet.semimajor_axis);
-				// Calculate the Planet Radius with current scale
-				var radius = planetSizes[planet.size] * scale;
-				// Create a size for later use
-				var size = new paper.Size(radius, radius);
-				// Calculate the Planets position
-				var pos = stars[starID].item.position + new paper.Point((((scales.AU * semimajor_axis) * scale) * Math.LOG10E), 0);
-				// Setup an orbit and assign it to the Planet
-				planet.orbit = new paper.Path.Ellipse({
-					center: stars[starID].item.position,
-					radius: stars[starID].calculateSize() + size + (((scales.AU * semimajor_axis) * scale) * Math.LOG10E),
-					strokeColor: planet.color,
-					stokeWidth: 1
-				});
-				// Reference the Planet in the Orbit
-				planet.orbit.planet = planet;
-				// Setup the Planet on the orbit line
-				planet.item = new paper.Path.Ellipse({
-					center: pos,
-					radius: size,
-					fillColor: planet.color
-				});
-				// Reference the Planet
-				planet.item.planet = planet;
-				// Remove the Orbit and Planet from the image as we are zoomed out and cannot see them anyway.
-				planet.orbit.remove();
-				planet.item.remove();
-				
-				// V1 Calculations for reference.
-				// var x = ((systemView.AU * semimajor_axis) * Math.LOG10E) + starSize + radius;
-				// drawOrbit(ctx, x, radius/2, planet.color);
-				// drawPlanet(ctx, x, 0, radius, planet, typeof planet.selected === "undefined" && i===systemItem ? true : planet.selected);
-				star.planets[index] = planet;
-			});
+			// Loop over each Planet and set them up for later use
+			// Might be a better way of doing this
+			// star.planets.forEach(function(planet, index) {
+			// 	// Parse the axis to a float as it is currently a string
+			// 	var semimajor_axis = isNaN(parseFloat(planet.semimajor_axis)) ? 0.01 : parseFloat(planet.semimajor_axis);
+			// 	// Calculate the Planet Radius with current scale
+			// 	var radius = planetSizes[planet.size] * scale;
+			// 	// Create a size for later use
+			// 	var size = new paper.Size(radius, radius);
+			// 	// Calculate the Planets position
+			// 	var pos = star.item.position + new paper.Point((((scales.AU * semimajor_axis) * scale) * Math.LOG10E), 0);
+			// 	// Setup an orbit and assign it to the Planet
+			// 	planet.orbit = new paper.Path.Ellipse({
+			// 		center: star.item.position,
+			// 		radius: star.calculateSize() + size + (((scales.AU * semimajor_axis) * scale) * Math.LOG10E),
+			// 		strokeColor: planet.color,
+			// 		stokeWidth: 1
+			// 	});
+			// 	// Reference the Planet in the Orbit
+			// 	planet.orbit.planet = planet;
+			// 	// Setup the Planet on the orbit line
+			// 	planet.item = new paper.Path.Ellipse({
+			// 		center: pos,
+			// 		radius: size,
+			// 		fillColor: planet.color
+			// 	});
+			// 	// Reference the Planet
+			// 	planet.item.planet = planet;
+			// 	// Remove the Orbit and Planet from the image as we are zoomed out and cannot see them anyway
+			// 	planet.orbit.remove();
+			// 	planet.item.remove();
+			// 	// V1 Calculations for reference.
+			// 	// var x = ((systemView.AU * semimajor_axis) * Math.LOG10E) + starSize + radius;
+			// 	// drawOrbit(ctx, x, radius/2, planet.color);
+			// 	// drawPlanet(ctx, x, 0, radius, planet, typeof planet.selected === "undefined" && i===systemItem ? true : planet.selected);
+			// 	star.planets[index] = planet;
+			// });
 
 			stars[starID] = star;
 		});
@@ -324,7 +329,7 @@ req.addEventListener("load", function () {
 		document.getElementById("start").disabled = false;
 		document.getElementById("start").innerHTML = "Start";
 		// Hardcode an initial focus while working out the zoom movement issue
-		currentStar = stars[330];
+		currentStar = stars[1];
 	}
 });
 

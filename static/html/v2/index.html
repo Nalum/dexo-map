@@ -9,6 +9,8 @@
 </head>
 
 <body>
+	<canvas id="galaxy" data-paper-resize="true"></canvas>
+
 	<header>
 		<section>
 			<h1>DexoWorlds Veran Way Galaxy</h1>
@@ -65,106 +67,103 @@
 				<h1 id="filter_star_header" onclick="showHideFilters(this);" data-target="filter_star"><span class="icon rotate">&raquo;</span> HOST STARS <span class="icon rotate">&raquo;</span></h1>
 				<hr />
 				<div id="filter_star_container" class="hidden">
-					<input type="checkbox" id="filter_star_labels" name="filter_star_labels" onclick="galaxyCtx.draw();" />
+					<input type="checkbox" id="filter_star_labels" name="filter_star_labels" />
 					<label for="filter_star_labels">Show Labels</label>
 					<br />
-					<input type="checkbox" id="filter_star_sizes" name="filter_star_sizes" onclick="galaxyCtx.draw();" />
+					<input type="checkbox" id="filter_star_sizes" name="filter_star_sizes" />
 					<label for="filter_star_sizes">Enable Sizes</label>
 					<br />
-					<input type="checkbox" id="filter_star_alpha" name="filter_star_alpha" onclick="galaxyCtx.draw();" />
+					<input type="checkbox" id="filter_star_alpha" name="filter_star_alpha" />
 					<label for="filter_star_alpha">Enable Luminosity</label>
 					<br />
-					<input type="checkbox" id="filter_star_regions" name="filter_star_regions" onclick="galaxyCtx.draw();" />
+					<input type="checkbox" id="filter_star_regions" name="filter_star_regions" />
 					<label for="filter_star_regions">Enable Regions</label>
 					<br />
-					<input type="checkbox" id="filter_star_limit_owned_in_system" name="filter_star_limit_owned_in_system" onclick="document.getElementById('filter_star_limit_owned_system').checked=false;updateStarSelect();galaxyCtx.draw();" />
+					<input type="checkbox" id="filter_star_limit_owned_in_system" name="filter_star_limit_owned_in_system" onclick="document.getElementById('filter_star_limit_owned_system').checked=false;" />
 					<label for="filter_star_limit_owned_in_system">Limit Owned In System</label>
 					<br />
-					<input type="checkbox" id="filter_star_limit_owned_system" name="filter_star_limit_owned_system" onclick="document.getElementById('filter_star_limit_owned_in_system').checked=false;updateStarSelect();galaxyCtx.draw();" />
+					<input type="checkbox" id="filter_star_limit_owned_system" name="filter_star_limit_owned_system" onclick="document.getElementById('filter_star_limit_owned_in_system').checked=false;" />
 					<label for="filter_star_limit_owned_system">Limit Owned System</label>
 					<br />
 					<label for="filter_star_star">Star:</label>
-					<select id="filter_star_star" name="filter_star_star" size="10" multiple onchange="galaxyCtx.draw();"><option selected value="0">-- Select Star --</option></select>
+					<select id="filter_star_star" name="filter_star_star" size="10" multiple><option selected value="0">-- Select Star --</option></select>
 					<br />
 					<p>Matching Stars: <span id="filter_star_count">0</span>/<span id="filter_star_total"></span> (<span id="filter_star_percent">0.0000</span>%)</p>
 					<label for="filter_star_spectral_type">Spectral Type:</label>
-					<select id="filter_star_spectral_type" name="filter_star_spectral_type" onchange="updateStarSelect();galaxyCtx.draw();"><option selected value="--">-- Select Spectral Type --</option></select>
+					<select id="filter_star_spectral_type" name="filter_star_spectral_type" onchange="updateStarSelect();"><option selected value="--">-- Select Spectral Type --</option></select>
 					<br />
 					<label for="filter_star_color">Star Color:</label>
-					<select id="filter_star_color" name="filter_star_color" onchange="updateStarSelect();galaxyCtx.draw();"><option selected value="--">-- Select Star Color --</option></select>
+					<select id="filter_star_color" name="filter_star_color" onchange="updateStarSelect();"><option selected value="--">-- Select Star Color --</option></select>
 					<br />
 					<label for="filter_star_effective_temperature">Effective Temperature:</label>
-					<select id="filter_star_effective_temperature" name="filter_star_effective_temperature" onchange="updateStarSelect();galaxyCtx.draw();"><option selected value="--">-- Select Effective Temperature --</option></select>
+					<select id="filter_star_effective_temperature" name="filter_star_effective_temperature" onchange="updateStarSelect();"><option selected value="--">-- Select Effective Temperature --</option></select>
 					<br />
 					<label for="filter_star_region">Region:</label>
-					<select id="filter_star_region" name="filter_star_region" onchange="updateStarSelect();galaxyCtx.draw();"><option selected value="--">-- Select Region --</option></select>
+					<select id="filter_star_region" name="filter_star_region" onchange="updateStarSelect();"><option selected value="--">-- Select Region --</option></select>
 					<br />
 					<label for="filter_star_quadrant">Quadrant:</label>
-					<select id="filter_star_quadrant" name="filter_star_quadrant" onchange="updateStarSelect();galaxyCtx.draw();"><option selected value="--">-- Select Quadrant --</option></select>
+					<select id="filter_star_quadrant" name="filter_star_quadrant" onchange="updateStarSelect();"><option selected value="--">-- Select Quadrant --</option></select>
 					<br />
 					<label for="filter_star_sector">Sector:</label>
-					<select id="filter_star_sector" name="filter_star_sector" onchange="updateStarSelect();galaxyCtx.draw();"><option selected value="--">-- Select Sector --</option></select>
+					<select id="filter_star_sector" name="filter_star_sector" onchange="updateStarSelect();"><option selected value="--">-- Select Sector --</option></select>
 					<br />
 					<label for="filter_star_radius">Radius:</label>
-					<select id="filter_star_radius" name="filter_star_radius" onchange="updateStarSelect();galaxyCtx.draw();"><option selected value="--">-- Select Radius --</option></select>
+					<select id="filter_star_radius" name="filter_star_radius" onchange="updateStarSelect();"><option selected value="--">-- Select Radius --</option></select>
 					<br />
 					<label for="filter_star_luminosity">Luminosity:</label>
-					<select id="filter_star_luminosity" name="filter_star_luminosity" onchange="updateStarSelect();galaxyCtx.draw();"><option selected value="--">-- Select Luminosity --</option></select>
+					<select id="filter_star_luminosity" name="filter_star_luminosity" onchange="updateStarSelect();"><option selected value="--">-- Select Luminosity --</option></select>
 					<br />
 					<label for="filter_star_mass">Mass:</label>
-					<select id="filter_star_mass" name="filter_star_mass" onchange="updateStarSelect();galaxyCtx.draw();"><option selected value="--">-- Select Mass --</option></select>
+					<select id="filter_star_mass" name="filter_star_mass" onchange="updateStarSelect();"><option selected value="--">-- Select Mass --</option></select>
 					<br />
 					<label for="filter_star_n_planets">No. Planets:</label>
-					<select id="filter_star_n_planets" name="filter_star_n_planets" onchange="updateStarSelect();galaxyCtx.draw();"><option selected value="--">-- Select No. Planets --</option></select>
+					<select id="filter_star_n_planets" name="filter_star_n_planets" onchange="updateStarSelect();"><option selected value="--">-- Select No. Planets --</option></select>
 					<hr />
 				</div>
 				<h1 id="filter_planet_header" onclick="showHideFilters(this);" data-target="filter_planet"><span class="icon rotate">&raquo;</span> PLANETS <span class="icon rotate">&raquo;</span></h1>
 				<hr />
 				<div id="filter_planet_container" class="hidden">
 					<p>Matching Planets: <span id="filter_planet_count">0</span>/<span id="filter_planet_total"></span> (<span id="filter_planet_percent">0.0000</span>%)</p>
-					<input type="checkbox" id="filter_planet_limit_owned" name="filter_planet_limit_owned" onclick="updateStarSelect();galaxyCtx.draw();" />
+					<input type="checkbox" id="filter_planet_limit_owned" name="filter_planet_limit_owned" onclick="updateStarSelect();" />
 					<label for="filter_planet_limit_owned">Limit to Owned</label>
 					<br />
 					<label for="filter_planet_bg_star_color">Background Star Color:</label>
-					<select id="filter_planet_bg_star_color" name="filter_planet_bg_star_color" onchange="updateStarSelect();galaxyCtx.draw();"><option selected value="--">-- Select Background Start Color --</option></select>
+					<select id="filter_planet_bg_star_color" name="filter_planet_bg_star_color" onchange="updateStarSelect();"><option selected value="--">-- Select Background Start Color --</option></select>
 					<br />
 					<label for="filter_planet_color">Planet Color:</label>
-					<select id="filter_planet_color" name="filter_planet_color" onchange="updateStarSelect();galaxyCtx.draw();"><option selected value="--">-- Select Planet Color --</option></select>
+					<select id="filter_planet_color" name="filter_planet_color" onchange="updateStarSelect();"><option selected value="--">-- Select Planet Color --</option></select>
 					<br />
 					<label for="filter_planet_composition">Composition:</label>
-					<select id="filter_planet_composition" name="filter_planet_composition" onchange="updateStarSelect();galaxyCtx.draw();"><option selected value="--">-- Select Composition --</option></select>
+					<select id="filter_planet_composition" name="filter_planet_composition" onchange="updateStarSelect();"><option selected value="--">-- Select Composition --</option></select>
 					<br />
 					<label for="filter_planet_large_satellites">Large Satellites:</label>
-					<select id="filter_planet_large_satellites" name="filter_planet_large_satellites" onchange="updateStarSelect();galaxyCtx.draw();"><option selected value="--">-- Select Large Satellites --</option></select>
+					<select id="filter_planet_large_satellites" name="filter_planet_large_satellites" onchange="updateStarSelect();"><option selected value="--">-- Select Large Satellites --</option></select>
 					<br />
 					<label for="filter_planet_life">Life:</label>
-					<select id="filter_planet_life" name="filter_planet_life" onchange="updateStarSelect();galaxyCtx.draw();"><option selected value="--">-- Select Life --</option></select>
+					<select id="filter_planet_life" name="filter_planet_life" onchange="updateStarSelect();"><option selected value="--">-- Select Life --</option></select>
 					<br />
 					<label for="filter_planet_planetary_position">Planetary Position:</label>
-					<select id="filter_planet_planetary_position" name="filter_planet_planetary_position" onchange="updateStarSelect();galaxyCtx.draw();"><option selected value="--">-- Select Planetary Position --</option></select>
+					<select id="filter_planet_planetary_position" name="filter_planet_planetary_position" onchange="updateStarSelect();"><option selected value="--">-- Select Planetary Position --</option></select>
 					<br />
 					<label for="filter_planet_research_impact">Research Impact:</label>
-					<select id="filter_planet_research_impact" name="filter_planet_research_impact" onchange="updateStarSelect();galaxyCtx.draw();"><option selected value="--">-- Select Research Impact --</option></select>
+					<select id="filter_planet_research_impact" name="filter_planet_research_impact" onchange="updateStarSelect();"><option selected value="--">-- Select Research Impact --</option></select>
 					<br />
 					<label for="filter_planet_rings">Rings:</label>
-					<select id="filter_planet_rings" name="filter_planet_rings" onchange="updateStarSelect();galaxyCtx.draw();"><option selected value="--">-- Select Rings --</option></select>
+					<select id="filter_planet_rings" name="filter_planet_rings" onchange="updateStarSelect();"><option selected value="--">-- Select Rings --</option></select>
 					<br />
 					<label for="filter_planet_rings_color">Rings Color:</label>
-					<select id="filter_planet_rings_color" name="filter_planet_rings_color" onchange="updateStarSelect();galaxyCtx.draw();"><option selected value="--">-- Select Rings Color --</option></select>
+					<select id="filter_planet_rings_color" name="filter_planet_rings_color" onchange="updateStarSelect();"><option selected value="--">-- Select Rings Color --</option></select>
 					<br />
 					<label for="filter_planet_satellites">Satellites:</label>
-					<select id="filter_planet_satellites" name="filter_planet_satellites" onchange="updateStarSelect();galaxyCtx.draw();"><option selected value="--">-- Select Satellites --</option></select>
+					<select id="filter_planet_satellites" name="filter_planet_satellites" onchange="updateStarSelect();"><option selected value="--">-- Select Satellites --</option></select>
 					<br />
 					<label for="filter_planet_size">Size:</label>
-					<select id="filter_planet_size" name="filter_planet_size" onchange="updateStarSelect();galaxyCtx.draw();"><option selected value="--">-- Select Size --</option></select>
+					<select id="filter_planet_size" name="filter_planet_size" onchange="updateStarSelect();"><option selected value="--">-- Select Size --</option></select>
 					<hr />
 				</div>
 				<button id="reset" onclick="reset();">Reset</button>
 				<button onclick="startHowTo()">How To</button>
 			</section>
-		</section>
-		<section id="map">
-			<canvas id="galaxy" width="900" height="900"></canvas>
 		</section>
 	</main>
 
