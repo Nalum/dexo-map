@@ -57,6 +57,16 @@ var closestStar;
 var currentStar;
 var starSymbols = {};
 
+// getParameterByName is used to set the currentStar var if either
+// star or planet is set as a GET parameter e.g. ?star=991
+function getParameterByName(name, url = window.location.href) {
+	name = name.replace(/[\[\]]/g, '\\$&');
+	var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+		results = regex.exec(url);
+	if (!results || !results[2]) return null;
+	return decodeURIComponent(results[2].replace(/\+/g, ' '));
+}
+
 // Setup an initial event to load the paper canvas
 window.addEventListener("load", function() {
 	paper.setup(galaxy);
@@ -329,7 +339,20 @@ req.addEventListener("load", function () {
 		document.getElementById("start").disabled = false;
 		document.getElementById("start").innerHTML = "Start";
 		// Hardcode an initial focus while working out the zoom movement issue
-		currentStar = stars[1];
+		gpStar = getParameterByName("star");
+		gpPlanet = getParameterByName("planet");
+
+		if (gpStar) {
+			currentStar = stars[gpStar];
+		} else if (gpPlanet) {
+			Object.keys(stars).forEach(function(starID) {
+				stars[starID].planets.forEach(function(planet) {
+					if (planet.planet_id == gpPlanet) {
+						currentStar = stars[starID];
+					}
+				});
+			});
+		}
 	}
 });
 
