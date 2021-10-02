@@ -53,21 +53,22 @@ body {
 	font-size: 14px;
 }
 
-canvas:before {
+body:before {
 	content: "";
 	position: absolute;
+	right: 0;
 	width: 25px;
 	height: 50px;
-	margin: 50px;
+	margin: 25px 50px;
 	z-index: 1;
 	background-image: url(/static/images/rocket.webp);
 	background-repeat: no-repeat;
 	background-size: 25px;
-	-webkit-transform: rotate(30deg);
-	-moz-transform: rotate(30deg);
-	-ms-transform: rotate(30deg);
-	-o-transform: rotate(30deg);
-	transform: rotate(30deg);
+	-webkit-transform: rotate(235deg);
+	-moz-transform: rotate(235deg);
+	-ms-transform: rotate(235deg);
+	-o-transform: rotate(235deg);
+	transform: rotate(235deg);
 }
 
 canvas {
@@ -98,7 +99,7 @@ header {
 }
 
 main {
-	top: 72px;
+	top: 126px;
 	left: 10px;
 	width: 302px;
 	height: 400px;
@@ -106,7 +107,7 @@ main {
 }
 
 footer {
-	bottom: 10px;
+	top: 72px;
 	left: 10px;
 	width: 400px;
 }
@@ -131,7 +132,7 @@ main section#data section {
 	margin: 0;
 	padding: 0;
 	height: 400px;
-	overflow: scroll;
+	overflow-y: scroll;
 }
 
 main section#data span.note {
@@ -171,16 +172,6 @@ main section button:disabled {
 	cursor: wait !important;
 }
 
-main section#map button {
-	width: 29px;
-}
-
-main section#map div#galaxy {
-	width: 900px;
-	height: 900px;
-	background-color: #00121D;
-}
-
 main section#data select {
 	width: 100%;
 }
@@ -204,89 +195,8 @@ main section label {
 	display: inline-block;
 }
 
-main section#map input#star_system_id {
-	width: 50px;
-}
-
-main section#data input#cardano-address {
-	width: 210px;
-}
-
-main section#data input[type=range] {
-	width: 90%;
-	margin: 2px auto;
-	display: block;
-}
-
 main section#data select option {
 	background-color: #073642;
-	cursor: pointer;
-}
-
-main section#map {
-	grid-column: 2;
-	width: 900px;
-}
-
-main section#map section#system_controls {
-	margin: 0 auto;
-	width: max-content;
-}
-
-main section#map div#system_data {
-	display: grid;
-	gap: 5px;
-	grid-template-columns: 5;
-	grid-template-rows: 30px 260px;
-	position: absolute;
-	margin: 0;
-	padding: 5px;
-	border-right: 4px solid rgba(0, 43, 54, .75);
-	background-color: rgba(7, 54, 66, .75);
-	height: 290px;
-}
-
-main section#map div#system_data div#nav {
-	height: 30px;
-	grid-column-start: 1;
-	grid-column-end: 5;
-}
-
-main section#map div#system_data div#star_data {
-	font-size: 12px;
-	color: #268bd2;
-	min-width: 300px;
-	grid-column: 1;
-}
-
-main section#map div#system_data div#planet_data {
-	font-size: 12px;
-	color: #268bd2;
-	min-width: 300px;
-	grid-column: 3;
-}
-
-main section#map div#system_data div#star_data img,
-main section#map div#system_data div#planet_data img {
-	float: right;
-}
-
-main section#map div#system_data div#show_hide_star_data {
-	grid-column: 2;
-}
-
-main section#map div#system_data div#show_hide_planet_data {
-	grid-column: 4;
-}
-
-main section#map div#system_data div#show_hide_star_data,
-main section#map div#system_data div#show_hide_planet_data {
-	display: inline;
-	vertical-align: middle;
-	font-size: 12px;
-	color: #268bd2;
-	width: 20px;
-	text-align: center;
 	cursor: pointer;
 }
 
@@ -296,15 +206,4 @@ main span.rotate {
 	vertical-align: middle;
 	text-transform: uppercase;
 	white-space: pre;
-}
-
-main section#map div#system_data p {
-	margin: 2px;
-}
-
-main section#map div#system_data p span {
-	color: #859900;
-	float: right;
-	margin: 0px 2px;
-	text-transform: capitalize;
 }
