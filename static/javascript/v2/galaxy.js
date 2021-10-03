@@ -206,6 +206,7 @@ req.addEventListener("load", function () {
 	if (req.readyState == 4 && req.status == "200") {
 		stars = JSON.parse(req.responseText);
 		var filterStarStar = document.getElementById("filter_star_star");
+		var starSystemID = document.getElementById("star_system_id");
 
 		// Loop over the star data to create symbols for each star color
 		Object.keys(stars).forEach(function (starID) {
@@ -381,11 +382,21 @@ req.addEventListener("load", function () {
 
 		if (gpStar) {
 			currentStar = stars[gpStar];
+			var pos = currentStar.calculatePosition();
+			var size = currentStar.calculateSize();
+			optionValue = currentStar.name + "|" + currentStar.star_id + "|" + pos.x + "|" + pos.y + "|" + size.width.toFixed(2) + "|" + currentStar.color.join("_");
+			starSystemID.value = parseInt(gpStar);
+			filterStarStar.value = optionValue;
 		} else if (gpPlanet) {
 			Object.keys(stars).forEach(function(starID) {
 				stars[starID].planets.forEach(function(planet) {
 					if (planet.planet_id == gpPlanet) {
 						currentStar = stars[starID];
+						var pos = currentStar.calculatePosition();
+						var size = currentStar.calculateSize();
+						optionValue = currentStar.name + "|" + currentStar.star_id + "|" + pos.x + "|" + pos.y + "|" + size.width.toFixed(2) + "|" + currentStar.color.join("_");
+						starSystemID.value = parseInt(starID);
+						filterStarStar.value = optionValue;
 					}
 				});
 			});
