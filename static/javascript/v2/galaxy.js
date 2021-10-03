@@ -67,6 +67,30 @@ function getParameterByName(name, url = window.location.href) {
 	return decodeURIComponent(results[2].replace(/\+/g, ' '));
 }
 
+// setStarSelect will change the multiselect star list to have only 1 selected
+// star based on the ID passed in
+function setStarSelect(starID) {
+	var starSelect = document.getElementById("filter_star_star");
+	starSelect.value = "--";
+
+	starSelect.childNodes.forEach(function(option) {
+		if (option.value.includes("|"+starID+"|")) {
+			option.selected = true;
+		}
+	});
+
+	starPercentCalc();
+}
+
+// Calculate the Percentage of Stars Selected against the Total
+function starPercentCalc() {
+	var count = document.getElementById("filter_star_count");
+	var percent = document.getElementById("filter_star_percent");
+
+	count.innerHTML = document.getElementById("filter_star_star").selectedOptions.length;
+	percent.innerHTML = ((document.getElementById("filter_star_star").selectedOptions.length / starTotal) * 100).toFixed(4);
+}
+
 // Setup an initial event to load the paper canvas
 window.addEventListener("load", function() {
 	paper.setup(galaxy);
@@ -81,10 +105,12 @@ window.addEventListener("load", function() {
 
 		view.onMouseDown = function(event) {
 			galaxy.className = "grabbing";
+			view.currentStar = currentStar;
 		};
 
 		view.onMouseUp = function(event) {
 			galaxy.className = "";
+			currentStar = view.currentStar;
 		};
 
 		view.onMouseDrag = function(event) {
@@ -179,6 +205,7 @@ req.open('GET', '/stars', true);
 req.addEventListener("load", function () {
 	if (req.readyState == 4 && req.status == "200") {
 		stars = JSON.parse(req.responseText);
+		var filterStarStar = document.getElementById("filter_star_star");
 
 		// Loop over the star data to create symbols for each star color
 		Object.keys(stars).forEach(function (starID) {
@@ -282,10 +309,20 @@ req.addEventListener("load", function () {
 
 			// onFrame is called 60 times a second (where possible)
 			star.item.onFrame = function(event) {
+				// Reset selected in case it has been deselected
+				this.selected = false;
+
 				// If the Star is no longer in the bounds of the canvas view let's
 				// remove it to reduce the required resources
 				if (!this.isInside(paper.view.bounds)) {
 					this.remove();
+				}
+
+				// Check if currentStar is this star and highlight it as selected
+				for (i = 0; i < filterStarStar.selectedOptions.length; i++ ) {
+					if (filterStarStar.selectedOptions[i].value.includes("|"+this.star.star_id+"|")) {
+						this.selected = true;
+					}
 				}
 			};
 
@@ -333,9 +370,9 @@ req.addEventListener("load", function () {
 			stars[starID] = star;
 		});
 
+		populateSelects();
 		document.getElementById("filter_star_total").innerHTML = starTotal;
 		document.getElementById("filter_planet_total").innerHTML = planetTotal;
-		populateSelects();
 		document.getElementById("start").disabled = false;
 		document.getElementById("start").innerHTML = "Start";
 		// Hardcode an initial focus while working out the zoom movement issue

@@ -47,6 +47,14 @@ html, body {
 	cursor: wait !important;
 }
 
+.rotate {
+	display: inline;
+	writing-mode: vertical-rl;
+	vertical-align: middle;
+	text-transform: uppercase;
+	white-space: pre;
+}
+
 body {
 	background-color: #002b36;
 	color: #839496;
@@ -102,8 +110,6 @@ main {
 	top: 126px;
 	left: 10px;
 	width: 302px;
-	height: 400px;
-	overflow: hidden;
 }
 
 footer {
@@ -122,17 +128,81 @@ footer section {
 	padding: 5px;
 }
 
+main section button {
+	background-color: #268bd2;
+	border: 4px solid #6c71c4;
+	color: #fdf6e3;
+	padding: 2px 4px;
+	cursor: pointer;
+	font-weight: bolder;
+	font-size: 12px;
+	width: 88px;
+}
+
+main section button:disabled {
+	background-color: #002b36 !important;
+	color: #dc322f !important;
+	cursor: wait !important;
+}
+
+main section select,
+main section input {
+	background-color: #268bd2;
+	border: 4px solid #6c71c4;
+	color: #fdf6e3;
+	font-size: 12px;
+}
+
+main section select option,
+main section input {
+	background-color: #268bd2;
+	padding: 2px 4px;
+	margin: 2px 0px;
+}
+
+main section label {
+	margin-top: 4px;
+	display: inline-block;
+}
+
+/***
+ * System controls navigate around the stars 1 by 1
+ */
+main section#system_controls {
+	background-color: #073642;
+	margin-bottom: 10px;
+	padding: 5px;
+}
+
+main section#system_controls p {
+	text-align: center;
+}
+
+main section#system_controls div {
+	margin: 0 auto;
+	width: 175px;
+}
+
+main section#system_controls div input {
+	width: 50px;
+}
+
+main section#system_controls div button {
+	width: 50px;
+}
+
+/***
+ * Data section, used for filtered highlighting
+ */
 main section#data {
 	grid-column: 1;
 }
 
 main section#data section {
-	padding: 5px;
 	background-color: #073642;
 	margin: 0;
-	padding: 0;
-	height: 400px;
-	overflow-y: scroll;
+	padding: 5px;
+	height: 628px;
 }
 
 main section#data span.note {
@@ -155,44 +225,8 @@ main section#data p {
 	margin: 10px 0px;
 }
 
-main section button {
-	background-color: #268bd2;
-	border: 4px solid #6c71c4;
-	color: #fdf6e3;
-	padding: 2px 4px;
-	cursor: pointer;
-	font-weight: bolder;
-	font-size: 12px;
-	width: 88px;
-}
-
-main section button:disabled {
-	background-color: #002b36 !important;
-	color: #dc322f !important;
-	cursor: wait !important;
-}
-
 main section#data select {
 	width: 100%;
-}
-
-main section select,
-main section input {
-	background-color: #268bd2;
-	border: 4px solid #6c71c4;
-	color: #fdf6e3;
-	font-size: 12px;
-}
-
-main section select option,
-main section input {
-	background-color: #268bd2;
-	padding: 2px 4px;
-	margin: 2px 0px;
-}
-main section label {
-	margin-top: 4px;
-	display: inline-block;
 }
 
 main section#data select option {
@@ -200,10 +234,14 @@ main section#data select option {
 	cursor: pointer;
 }
 
-main span.rotate {
-	display: inline;
-	writing-mode: vertical-rl;
-	vertical-align: middle;
-	text-transform: uppercase;
-	white-space: pre;
+main section#data section div,
+main section#data section h1 {
+	border-bottom: 4px solid #002b36;
+	padding-bottom: 5px;
+	margin-bottom: 5px;
+}
+
+main section#data section#filter div {
+	height: 482px;
+	overflow-y: scroll;
 }

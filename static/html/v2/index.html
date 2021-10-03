@@ -23,61 +23,60 @@
 	</header>
 
 	<main>
+		<section id="system_controls">
+			<p>Switch between Star Systems</p>
+			<div>
+				<button id="previous" onclick="that = document.getElementById('star_system_id'); that.stepDown();currentStar = stars[that.value];setStarSelect(that.value);">&laquo;</button>
+				<input type="number" id="star_system_id" min="1" max="2500" value="1" onchange="currentStar = stars[this.value];setStarSelect(this.value);" />
+				<button id="next" onclick="that = document.getElementById('star_system_id'); that.stepUp();currentStar = stars[that.value];setStarSelect(that.value);">&raquo;</button>
+			</div>
+		</section>
 		<section id="data">
 			<section id="how_to">
 				<h1>HOW TO</h1>
-				<hr />
-				<p>
-					Under the OWNED header enter your Cardano Address <span class="note">(starting with
-					<code>stake</code> or <code>addr</code>)</span> in the input field and click
-					the Fetch button to have your data fetched and displayed on the map.
-				</p>
-				<p>
-					Under the HOST STAR header you can use the checkboxes to enable the different options.
-				</p>
-				<p>
-					The Star select allows you to manually select one or more stars to draw focus around.
-					Simply CTRL (CMD on Mac, I assume) click each star you would like to focus on.
-				</p>
-				<p>
-					The dropdowns listed under PLANETS allows you to filter the stars to show where
-					planets matching a specific filter set are located. When the star has focus the
-					matching Planets will have a border to indicate that it matches the filter. A
-					count of the matching planets will also be displayed just under the header.
-				</p>
-				<p>
-					The map is interactive and can be panned around by clicking and dragging.
-					You can also use the mouse wheel to zoom in and out.
-				</p>
-				<p>
-					Finally the reset button will reset all options to the defaults.
-				</p>
-				<hr />
+				<div>
+					<p>
+						Under the OWNED header enter your Cardano Address <span class="note">(starting with
+						<code>stake</code> or <code>addr</code>)</span> in the input field and click
+						the Fetch button to have your data fetched and displayed on the map.
+					</p>
+					<p>
+						Under the HOST STAR header you can use the checkboxes to enable the different options.
+					</p>
+					<p>
+						The Star select allows you to manually select one or more stars to draw focus around.
+						Simply CTRL (CMD on Mac, I assume) click each star you would like to focus on.
+					</p>
+					<p>
+						The dropdowns listed under PLANETS allows you to filter the stars to show where
+						planets matching a specific filter set are located. When the star has focus the
+						matching Planets will have a border to indicate that it matches the filter. A
+						count of the matching planets will also be displayed just under the header.
+					</p>
+					<p>
+						The map is interactive and can be panned around by clicking and dragging.
+						You can also use the mouse wheel to zoom in and out.
+					</p>
+					<p>
+						Finally the reset button will reset all options to the defaults.
+					</p>
+				</div>
 				<button disabled="true" id="start" onclick="startHowTo()">- Loading -</button>
 			</section>
 			<section id="filter" class="hidden">
 				<h1 id="filter_fetch_header" onclick="showHideFilters(this);" data-target="filter_fetch"><span class="icon rotate">&laquo;</span> OWNED <span class="icon rotate">&laquo;</span></h1>
-				<hr />
 				<div id="filter_fetch_container">
 					<label for="filter_fetch_cardano_address">Cardano Address: <span class="note">(starting with <code>stake</code> or <code>addr</code>)</span></label>
 					<input type="text" id="filter_fetch_cardano_address" name="filter_fetch_cardano_address" value="" placeholder="stakeXXX or addrXXX" />
 					<button id="fetch-dexo" onclick="getStakeDexo(document.getElementById('filter_fetch_cardano_address').value);">Fetch</button>
-					<hr />
 				</div>
 				<h1 id="filter_star_header" onclick="showHideFilters(this);" data-target="filter_star"><span class="icon rotate">&raquo;</span> HOST STARS <span class="icon rotate">&raquo;</span></h1>
-				<hr />
 				<div id="filter_star_container" class="hidden">
 					<input type="checkbox" id="filter_star_labels" name="filter_star_labels" />
 					<label for="filter_star_labels">Show Labels</label>
 					<br />
-					<input type="checkbox" id="filter_star_sizes" name="filter_star_sizes" />
-					<label for="filter_star_sizes">Enable Sizes</label>
-					<br />
 					<input type="checkbox" id="filter_star_alpha" name="filter_star_alpha" />
 					<label for="filter_star_alpha">Enable Luminosity</label>
-					<br />
-					<input type="checkbox" id="filter_star_regions" name="filter_star_regions" />
-					<label for="filter_star_regions">Enable Regions</label>
 					<br />
 					<input type="checkbox" id="filter_star_limit_owned_in_system" name="filter_star_limit_owned_in_system" onclick="document.getElementById('filter_star_limit_owned_system').checked=false;" />
 					<label for="filter_star_limit_owned_in_system">Limit Owned In System</label>
@@ -85,7 +84,7 @@
 					<input type="checkbox" id="filter_star_limit_owned_system" name="filter_star_limit_owned_system" onclick="document.getElementById('filter_star_limit_owned_in_system').checked=false;" />
 					<label for="filter_star_limit_owned_system">Limit Owned System</label>
 					<br />
-					<label for="filter_star_star">Star:</label>
+					<label for="filter_star_star">Stars:</label>
 					<select id="filter_star_star" name="filter_star_star" size="10" multiple><option selected value="0">-- Select Star --</option></select>
 					<br />
 					<p>Matching Stars: <span id="filter_star_count">0</span>/<span id="filter_star_total"></span> (<span id="filter_star_percent">0.0000</span>%)</p>
@@ -118,10 +117,8 @@
 					<br />
 					<label for="filter_star_n_planets">No. Planets:</label>
 					<select id="filter_star_n_planets" name="filter_star_n_planets" onchange="updateStarSelect();"><option selected value="--">-- Select No. Planets --</option></select>
-					<hr />
 				</div>
 				<h1 id="filter_planet_header" onclick="showHideFilters(this);" data-target="filter_planet"><span class="icon rotate">&raquo;</span> PLANETS <span class="icon rotate">&raquo;</span></h1>
-				<hr />
 				<div id="filter_planet_container" class="hidden">
 					<p>Matching Planets: <span id="filter_planet_count">0</span>/<span id="filter_planet_total"></span> (<span id="filter_planet_percent">0.0000</span>%)</p>
 					<input type="checkbox" id="filter_planet_limit_owned" name="filter_planet_limit_owned" onclick="updateStarSelect();" />
@@ -159,7 +156,6 @@
 					<br />
 					<label for="filter_planet_size">Size:</label>
 					<select id="filter_planet_size" name="filter_planet_size" onchange="updateStarSelect();"><option selected value="--">-- Select Size --</option></select>
-					<hr />
 				</div>
 				<button id="reset" onclick="reset();">Reset</button>
 				<button onclick="startHowTo()">How To</button>
