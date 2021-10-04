@@ -144,9 +144,9 @@ window.addEventListener("load", function() {
 				Object.keys(stars).forEach(function(starID) {
 					var star = stars[starID];
 					var pos = star.calculatePosition();
-					star.calculateSize();
 
 					if (paper.view.bounds.contains(pos) && star.item.parent === null) {
+						star.calculateSize();
 						star.item.addTo(starsLayer);
 					}
 
@@ -374,6 +374,7 @@ req.addEventListener("load", function () {
 				planet.calculatePosition = function() {
 					var semimajor_axis = isNaN(parseFloat(planet.semimajor_axis)) ? 0.01 : parseFloat(planet.semimajor_axis);
 					var pos = planet.star.item.getPosition()
+						.add(this.star.calculateSize().width/2)
 						.add(this.calculateSize().width)
 						.add(((scales.AU * semimajor_axis) * scale) * Math.LOG10E);
 					pos.y = 0;
