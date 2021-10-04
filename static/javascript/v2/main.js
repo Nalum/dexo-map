@@ -107,9 +107,7 @@ function resetFilters() {
 
 function reset() {
 	document.getElementById('filter_fetch_cardano_address').value = "";
-	document.getElementById('filter_star_sizes').checked = false;
 	document.getElementById('filter_star_alpha').checked = false;
-	document.getElementById('filter_star_regions').checked = false;
 	document.getElementById('filter_star_star').value = "--";
 	document.getElementById('filter_planet_limit_owned').checked = false;
 	galacticCenter = new paper.Point(0,0);

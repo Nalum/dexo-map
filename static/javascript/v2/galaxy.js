@@ -36,13 +36,13 @@ const planetSizes = {
 	"XL": scales.REarth*10.0
 };
 
-// Minimum Star Radius allowed
-const minStarSize = new paper.Size(2,2);
+// Minimum Radius allowed
+const minSize = new paper.Size(3,3);
 // Scale will change to show zooming in/out
-var scale = 7e-16;
 const minZoom = 7e-16;
-const planetaryZoom = 5e-13;
 const maxZoom = 0.00012368155244843137;
+var scale = 7e-16;
+var drawSystem = false;
 
 // Offset will be used to allow panning around
 var galacticCenter = new paper.Point(0,0);
@@ -56,6 +56,11 @@ var stars;
 var closestStar;
 var currentStar;
 var starSymbols = {};
+// Setup 2 layers for use in the project
+// This layer will hold all Stars
+var starsLayer;
+// This layer will hold all Planets
+var planetsLayer;
 
 // getParameterByName is used to set the currentStar var if either
 // star or planet is set as a GET parameter e.g. ?star=991
@@ -96,6 +101,14 @@ window.addEventListener("load", function() {
 	paper.setup(galaxy);
 
 	with (paper) {
+		starsLayer = new Layer({
+			name: "stars"
+		});
+		project.addLayer(starsLayer);
+		planetsLayer = new Layer({
+			name: "planets"
+		});
+		project.addLayer(planetsLayer);
 		// Setup the view so that 0,0 is in the center of the canvas image
 		view.translate(galaxy.width / 2, galaxy.height / 2);
 
@@ -131,9 +144,10 @@ window.addEventListener("load", function() {
 				Object.keys(stars).forEach(function(starID) {
 					var star = stars[starID];
 					var pos = star.calculatePosition();
+					star.calculateSize();
 
 					if (paper.view.bounds.contains(pos) && star.item.parent === null) {
-						star.item.addTo(paper.project);
+						star.item.addTo(starsLayer);
 					}
 
 					stars[starID] = star;
@@ -167,8 +181,35 @@ window.addEventListener("load", function() {
 			var star = stars[starID];
 			star.calculatePosition();
 			star.calculateSize();
+
+			if (starsLayer.getChildren().length === 1) {
+				if (star.star_id === currentStar.star_id) {
+					star.planets.forEach(function(planet) {
+						if (!planet.item.parent) {
+							planet.item.addTo(planetsLayer);
+						}
+
+						if (!planet.orbit.parent) {
+							planet.orbit.addTo(planetsLayer);
+						}
+
+						planet.needsUpdate = true;
+					});
+				}
+			} else {
+				planetsLayer.getChildren().forEach(function(item) {
+					item.remove();
+				});
+			}
+
 			stars[starID] = star;
 		});
+
+		if (paper.project.getItem().getChildren().length === 1) {
+			drawSystem = true;
+		} else {
+			drawSystem = false;
+		}
 
 		// Stop the default action of scrolling from happening
 		return evt.preventDefault() && false;
@@ -207,6 +248,7 @@ req.addEventListener("load", function () {
 		stars = JSON.parse(req.responseText);
 		var filterStarStar = document.getElementById("filter_star_star");
 		var starSystemID = document.getElementById("star_system_id");
+		currentStar = stars[8];
 
 		// Loop over the star data to create symbols for each star color
 		Object.keys(stars).forEach(function (starID) {
@@ -217,7 +259,7 @@ req.addEventListener("load", function () {
 			if (typeof starSymbols[color] === "undefined") {
 				var ellipse = new paper.Path.Ellipse({
 					center: new paper.Point(0,0),
-					radius: minStarSize
+					radius: minSize
 				});
 
 				// This is calculating the stars color depending on whether there is more than 1
@@ -270,10 +312,10 @@ req.addEventListener("load", function () {
 
 			// calculateSize uses the radius of the star and multiplies it by the known radius of the sun (Sol)
 			// It is also multiplied by the scale value to scale the star correctly
-			// minStarSize is returned if the Stars size is less than it at any given scale
+			// minSize is returned if the Stars size is less than it at any given scale
 			star.calculateSize = function() {
 				var radius = (scales.RSol * this.radius) * scale;
-				var size = radius > minStarSize.width ? new paper.Size(radius, radius) : minStarSize;
+				var size = radius > minSize.width ? new paper.Size(radius, radius) : minSize;
 
 				if (this.item) {
 					var bounds = new paper.Rectangle({
@@ -291,7 +333,7 @@ req.addEventListener("load", function () {
 
 			// Here we are adding the Star to the canvas
 			star.item = starSymbols[color].place(star.calculatePosition());
-			// star.item.onFrame = star.item.definition.item.onFrame;
+			star.item.addTo(starsLayer);
 
 			// For now if you click on the star it will log the ID to the console
 			// Want to do more here with selection/info/planet display
@@ -310,20 +352,10 @@ req.addEventListener("load", function () {
 
 			// onFrame is called 60 times a second (where possible)
 			star.item.onFrame = function(event) {
-				// Reset selected in case it has been deselected
-				this.selected = false;
-
 				// If the Star is no longer in the bounds of the canvas view let's
 				// remove it to reduce the required resources
-				if (!this.isInside(paper.view.bounds)) {
+				if (!this.isInside(paper.view.bounds) && !drawSystem) {
 					this.remove();
-				}
-
-				// Check if currentStar is this star and highlight it as selected
-				for (i = 0; i < filterStarStar.selectedOptions.length; i++ ) {
-					if (filterStarStar.selectedOptions[i].value.includes("|"+this.star.star_id+"|")) {
-						this.selected = true;
-					}
 				}
 			};
 
@@ -332,41 +364,98 @@ req.addEventListener("load", function () {
 
 			// Loop over each Planet and set them up for later use
 			// Might be a better way of doing this
-			// star.planets.forEach(function(planet, index) {
-			// 	// Parse the axis to a float as it is currently a string
-			// 	var semimajor_axis = isNaN(parseFloat(planet.semimajor_axis)) ? 0.01 : parseFloat(planet.semimajor_axis);
-			// 	// Calculate the Planet Radius with current scale
-			// 	var radius = planetSizes[planet.size] * scale;
-			// 	// Create a size for later use
-			// 	var size = new paper.Size(radius, radius);
-			// 	// Calculate the Planets position
-			// 	var pos = star.item.position + new paper.Point((((scales.AU * semimajor_axis) * scale) * Math.LOG10E), 0);
-			// 	// Setup an orbit and assign it to the Planet
-			// 	planet.orbit = new paper.Path.Ellipse({
-			// 		center: star.item.position,
-			// 		radius: star.calculateSize() + size + (((scales.AU * semimajor_axis) * scale) * Math.LOG10E),
-			// 		strokeColor: planet.color,
-			// 		stokeWidth: 1
-			// 	});
-			// 	// Reference the Planet in the Orbit
-			// 	planet.orbit.planet = planet;
-			// 	// Setup the Planet on the orbit line
-			// 	planet.item = new paper.Path.Ellipse({
-			// 		center: pos,
-			// 		radius: size,
-			// 		fillColor: planet.color
-			// 	});
-			// 	// Reference the Planet
-			// 	planet.item.planet = planet;
-			// 	// Remove the Orbit and Planet from the image as we are zoomed out and cannot see them anyway
-			// 	planet.orbit.remove();
-			// 	planet.item.remove();
-			// 	// V1 Calculations for reference.
-			// 	// var x = ((systemView.AU * semimajor_axis) * Math.LOG10E) + starSize + radius;
-			// 	// drawOrbit(ctx, x, radius/2, planet.color);
-			// 	// drawPlanet(ctx, x, 0, radius, planet, typeof planet.selected === "undefined" && i===systemItem ? true : planet.selected);
-			// 	star.planets[index] = planet;
-			// });
+			star.planets.forEach(function(planet, index) {
+				planet.star = star;
+
+				planet.calculateSize = function() {
+					return minSize;
+				};
+
+				planet.calculatePosition = function() {
+					var semimajor_axis = isNaN(parseFloat(planet.semimajor_axis)) ? 0.01 : parseFloat(planet.semimajor_axis);
+					var pos = planet.star.item.getPosition()
+						.add(this.calculateSize().width)
+						.add(((scales.AU * semimajor_axis) * scale) * Math.LOG10E);
+					pos.y = 0;
+					return pos;
+				};
+
+				planet.calculateOrbitalPath = function() {
+					var pos = this.calculatePosition();
+					return new paper.Size(pos.x*2);
+				};
+
+				planet.orbit = paper.Path.Ellipse({
+					center: star.item.getPosition(),
+					radius: planet.calculateOrbitalPath(),
+					strokeColor: base02,
+					strokeWidth: 1
+				});
+				planet.orbit.planet = planet;
+
+				planet.orbit.onFrame = function() {
+					if (starsLayer.getChildren().length === 1) {
+						if (drawSystem) {
+							this.setPosition(this.planet.star.item.getPosition());
+							this.getBounds().setSize(planet.calculateOrbitalPath());
+						} else {
+							this.remove();
+						}
+					}
+				};
+
+				planet.orbit.remove();
+
+				var planetColor = planet.color;
+
+				planet.item = paper.Path.Ellipse({
+					center: planet.star.item.getPosition().add(planet.calculatePosition()),
+					radius: planet.star.item.getBounds().getSize().add(planet.calculateSize())
+				});
+
+				if (planetColor == "rainbow") {
+					planetColor = {
+						gradient: {
+							stops: [
+								yellow, orange, red, magenta,
+								violet, blue, cyan, green
+							],
+							radial: true
+						},
+						origin: planet.item.position,
+						destination: planet.item.bounds.rightCenter
+					};
+				}
+
+				planet.item.fillColor = planetColor;
+				planet.item.planet = planet;
+				planet.rotation = getRandomInclusive(0.1, 1.0);
+
+				planet.item.onFrame = function() {
+					if (starsLayer.getChildren().length === 1) {
+						if (drawSystem) {
+							if (this.planet.needsUpdate) {
+								this.setPosition(this.planet.calculatePosition());
+								this.getBounds().setSize(this.planet.calculateSize());
+								this.planet.needsUpdate = false;
+							}
+
+							this.rotate(this.planet.rotation, this.planet.star.calculatePosition());
+						} else {
+							this.remove();
+						}
+					}
+				};
+
+				planet.item.remove();
+				// V1 Calculations for reference.
+				// var semimajor_axis = isNaN(parseFloat(planet.semimajor_axis)) ? 0.01 : parseFloat(planet.semimajor_axis);
+				// var radius = planetSizes[planet.size];
+				// var x = ((systemView.AU * semimajor_axis) * Math.LOG10E) + starSize + radius;
+				// drawOrbit(ctx, x, radius/2, planet.color);
+				// drawPlanet(ctx, x, 0, radius, planet, typeof planet.selected === "undefined" && i===systemItem ? true : planet.selected);
+				star.planets[index] = planet;
+			});
 
 			stars[starID] = star;
 		});
