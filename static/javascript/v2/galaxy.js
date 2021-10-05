@@ -248,7 +248,6 @@ req.addEventListener("load", function () {
 		stars = JSON.parse(req.responseText);
 		var filterStarStar = document.getElementById("filter_star_star");
 		var starSystemID = document.getElementById("star_system_id");
-		currentStar = stars[8];
 
 		// Loop over the star data to create symbols for each star color
 		Object.keys(stars).forEach(function (starID) {
@@ -490,6 +489,11 @@ req.addEventListener("load", function () {
 					}
 				});
 			});
+		} else {
+			// If no star or planet is requested let's pick a star at random
+			var starID = getRandomInclusive(1, 2500, true);
+			currentStar = stars[starID];
+			starSystemID.value = starID;
 		}
 	}
 });
