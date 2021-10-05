@@ -43,6 +43,7 @@ const minZoom = 7e-16;
 const maxZoom = 0.00012368155244843137;
 var scale = 7e-16;
 var drawSystem = false;
+var dragging = false;
 
 // Offset will be used to allow panning around
 var galacticCenter = new paper.Point(0,0);
@@ -53,7 +54,6 @@ var planetTotal = 0;
 var starTotal = 0;
 // Declare stars for later use
 var stars;
-var closestStar;
 var currentStar;
 var starSymbols = {};
 // Setup 2 layers for use in the project
@@ -96,6 +96,57 @@ function starPercentCalc() {
 	percent.innerHTML = ((document.getElementById("filter_star_star").selectedOptions.length / starTotal) * 100).toFixed(4);
 }
 
+function setCurrentStar(star) {
+	planetsLayer.removeChildren();
+	currentStar = star;
+	addPlanets();
+}
+
+function addPlanets() {
+	// recalculate the size and position of the stars based on the new scale
+	Object.keys(stars).forEach(function(starID) {
+		var star = stars[starID];
+		star.calculatePosition();
+		star.calculateSize();
+
+		if (starsLayer.getChildren().length == 1) {
+			if (star.star_id == currentStar.star_id) {
+				star.planets.forEach(function(planet) {
+					if (!planet.orbit.parent) {
+						planet.orbit.addTo(planetsLayer);
+					}
+
+					if (!planet.item.parent) {
+						planet.item.addTo(planetsLayer);
+					}
+				});
+			}
+		} else {
+			planetsLayer.removeChildren();
+		}
+
+		stars[starID] = star;
+	});
+}
+
+function getRandomInclusive(min, max, int) {
+	d = Math.random();
+	v = 0;
+	v = d >= min && d <= max
+		? d
+		: d < min
+			? min
+			: max;
+
+	if (int) {
+		min = Math.ceil(min);
+		max = Math.floor(max);
+		v = Math.floor(Math.random() * (max - min + 1) + min); // The maximum is inclusive and the minimum is inclusive
+	}
+
+	return v;
+}
+
 // Setup an initial event to load the paper canvas
 window.addEventListener("load", function() {
 	paper.setup(galaxy);
@@ -118,23 +169,21 @@ window.addEventListener("load", function() {
 
 		view.onMouseDown = function(event) {
 			galaxy.className = "grabbing";
-			view.currentStar = currentStar;
+			dragging = true;
 		};
 
 		view.onMouseUp = function(event) {
 			galaxy.className = "";
-			currentStar = view.currentStar;
+			dragging = false;
 		};
 
 		view.onMouseDrag = function(event) {
-			// Unset currentStar when dragging to allow dragging to work
-			currentStar = null;
 			galacticCenter = galacticCenter.add(event.delta);
 		};
 
 		view.onFrame = function(event) {
 			// If currentStar is set to a star we force galacticCenter to be offset from that point
-			if (currentStar) {
+			if (currentStar && !dragging) {
 				galacticCenter = galacticCenter.subtract(currentStar.calculatePosition());
 			}
 
@@ -151,6 +200,16 @@ window.addEventListener("load", function() {
 					}
 
 					stars[starID] = star;
+				});
+
+				planetsLayer.getChildren().forEach(function(item) {
+					if (!dragging) {
+						item.planet.orbit.getBounds().setSize(item.planet.calculateOrbitalPath());
+					}
+
+					item.planet.orbit.setPosition(item.planet.star.calculatePosition());
+					item.planet.item.setPosition(item.planet.orbit.getFirstSegment().point);
+					item.planet.item.getBounds().setSize(item.planet.calculateSize());
 				});
 			}
 		}
@@ -176,34 +235,7 @@ window.addEventListener("load", function() {
 				? minZoom
 				: scale;
 
-		// recalculate the size and position of the stars based on the new scale
-		Object.keys(stars).forEach(function(starID) {
-			var star = stars[starID];
-			star.calculatePosition();
-			star.calculateSize();
-
-			if (starsLayer.getChildren().length === 1) {
-				if (star.star_id === currentStar.star_id) {
-					star.planets.forEach(function(planet) {
-						if (!planet.item.parent) {
-							planet.item.addTo(planetsLayer);
-						}
-
-						if (!planet.orbit.parent) {
-							planet.orbit.addTo(planetsLayer);
-						}
-
-						planet.needsUpdate = true;
-					});
-				}
-			} else {
-				planetsLayer.getChildren().forEach(function(item) {
-					item.remove();
-				});
-			}
-
-			stars[starID] = star;
-		});
+		addPlanets();
 
 		if (paper.project.getItem().getChildren().length === 1) {
 			drawSystem = true;
@@ -218,24 +250,6 @@ window.addEventListener("load", function() {
 	galaxy.addEventListener("DOMMouseScroll", handleScroll, false);
 	galaxy.addEventListener("mousewheel", handleScroll, false);
 });
-
-function getRandomInclusive(min, max, int) {
-	d = Math.random();
-	v = 0;
-	v = d >= min && d <= max
-		? d
-		: d < min
-			? min
-			: max;
-
-	if (int) {
-		min = Math.ceil(min);
-		max = Math.floor(max);
-		v = Math.floor(Math.random() * (max - min + 1) + min); // The maximum is inclusive and the minimum is inclusive
-	}
-
-	return v;
-}
 
 // Load the Star Data
 var req = new XMLHttpRequest();
@@ -365,6 +379,7 @@ req.addEventListener("load", function () {
 			// Might be a better way of doing this
 			star.planets.forEach(function(planet, index) {
 				planet.star = star;
+				planet.rotation = getRandomInclusive(0.1, 1.0);
 
 				planet.calculateSize = function() {
 					return minSize;
@@ -372,7 +387,7 @@ req.addEventListener("load", function () {
 
 				planet.calculatePosition = function() {
 					var semimajor_axis = isNaN(parseFloat(planet.semimajor_axis)) ? 0.01 : parseFloat(planet.semimajor_axis);
-					var pos = planet.star.item.getPosition()
+					var pos = planet.star.calculatePosition()
 						.add(this.star.calculateSize().width/2)
 						.add(this.calculateSize().width)
 						.add(((scales.AU * semimajor_axis) * scale) * Math.LOG10E);
@@ -391,27 +406,23 @@ req.addEventListener("load", function () {
 					strokeColor: base02,
 					strokeWidth: 1
 				});
-				planet.orbit.planet = planet;
+				planet.item = paper.Path.Ellipse({
+					center: planet.orbit.getFirstSegment().point,
+					radius: planet.star.calculateSize().add(planet.calculateSize())
+				});
 
+				planet.orbit.planet = planet;
 				planet.orbit.onFrame = function() {
-					if (starsLayer.getChildren().length === 1) {
+					if (starsLayer.getChildren().length == 1) {
 						if (drawSystem) {
-							this.setPosition(this.planet.star.item.getPosition());
-							this.getBounds().setSize(planet.calculateOrbitalPath());
-						} else {
-							this.remove();
+							this.setPosition(this.planet.star.calculatePosition());
+							this.rotate(this.planet.rotation, this.planet.star.calculatePosition());
+							this.planet.item.setPosition(this.getFirstSegment().point);
 						}
 					}
 				};
-
 				planet.orbit.remove();
-
 				var planetColor = planet.color;
-
-				planet.item = paper.Path.Ellipse({
-					center: planet.star.item.getPosition().add(planet.calculatePosition()),
-					radius: planet.star.item.getBounds().getSize().add(planet.calculateSize())
-				});
 
 				if (planetColor == "rainbow") {
 					planetColor = {
@@ -429,31 +440,7 @@ req.addEventListener("load", function () {
 
 				planet.item.fillColor = planetColor;
 				planet.item.planet = planet;
-				planet.rotation = getRandomInclusive(0.1, 1.0);
-
-				planet.item.onFrame = function() {
-					if (starsLayer.getChildren().length === 1) {
-						if (drawSystem) {
-							if (this.planet.needsUpdate) {
-								this.setPosition(this.planet.calculatePosition());
-								this.getBounds().setSize(this.planet.calculateSize());
-								this.planet.needsUpdate = false;
-							}
-
-							this.rotate(this.planet.rotation, this.planet.star.calculatePosition());
-						} else {
-							this.remove();
-						}
-					}
-				};
-
 				planet.item.remove();
-				// V1 Calculations for reference.
-				// var semimajor_axis = isNaN(parseFloat(planet.semimajor_axis)) ? 0.01 : parseFloat(planet.semimajor_axis);
-				// var radius = planetSizes[planet.size];
-				// var x = ((systemView.AU * semimajor_axis) * Math.LOG10E) + starSize + radius;
-				// drawOrbit(ctx, x, radius/2, planet.color);
-				// drawPlanet(ctx, x, 0, radius, planet, typeof planet.selected === "undefined" && i===systemItem ? true : planet.selected);
 				star.planets[index] = planet;
 			});
 
@@ -470,7 +457,7 @@ req.addEventListener("load", function () {
 		gpPlanet = getParameterByName("planet");
 
 		if (gpStar) {
-			currentStar = stars[gpStar];
+			setCurrentStar(stars[gpStar]);
 			var pos = currentStar.calculatePosition();
 			var size = currentStar.calculateSize();
 			optionValue = currentStar.name + "|" + currentStar.star_id + "|" + pos.x + "|" + pos.y + "|" + size.width.toFixed(2) + "|" + currentStar.color.join("_");
@@ -480,7 +467,7 @@ req.addEventListener("load", function () {
 			Object.keys(stars).forEach(function(starID) {
 				stars[starID].planets.forEach(function(planet) {
 					if (planet.planet_id == gpPlanet) {
-						currentStar = stars[starID];
+						setCurrentStar(stars[starID]);
 						var pos = currentStar.calculatePosition();
 						var size = currentStar.calculateSize();
 						optionValue = currentStar.name + "|" + currentStar.star_id + "|" + pos.x + "|" + pos.y + "|" + size.width.toFixed(2) + "|" + currentStar.color.join("_");
@@ -492,7 +479,7 @@ req.addEventListener("load", function () {
 		} else {
 			// If no star or planet is requested let's pick a star at random
 			var starID = getRandomInclusive(1, 2500, true);
-			currentStar = stars[starID];
+			setCurrentStar(stars[starID]);
 			starSystemID.value = starID;
 		}
 	}
