@@ -40,10 +40,12 @@ const planetSizes = {
 const minSize = new paper.Size(3,3);
 // Scale will change to show zooming in/out
 const minZoom = 7e-16;
-const maxZoom = 0.00012368155244843137;
-var scale = 7e-16;
+const maxZoom = 1;
+var scale = minZoom;
 var drawSystem = false;
 var dragging = false;
+var scaleText;
+var scaleTextPoint;
 
 // Offset will be used to allow panning around
 var galacticCenter = new paper.Point(0,0);
@@ -55,12 +57,15 @@ var starTotal = 0;
 // Declare stars for later use
 var stars;
 var currentStar;
+var currentPlanet;
 var starSymbols = {};
 // Setup 2 layers for use in the project
 // This layer will hold all Stars
 var starsLayer;
 // This layer will hold all Planets
 var planetsLayer;
+// This layer will hold UI elements
+var uiLayer;
 
 // getParameterByName is used to set the currentStar var if either
 // star or planet is set as a GET parameter e.g. ?star=991
@@ -99,10 +104,21 @@ function starPercentCalc() {
 function setCurrentStar(star) {
 	planetsLayer.removeChildren();
 	currentStar = star;
-	addPlanets();
+	currentPlanet = null;
+	document.getElementById('planetary_position').value = 0;
+	document.getElementById('planetary_position').max = currentStar.planets.length;
 }
 
-function addPlanets() {
+function setCurrentPlanet(index) {
+	if (index > 0) {
+		currentPlanet = currentStar.planets[index-1];
+	} else {
+		currentPlanet = null;
+	}
+}
+
+function addSystem() {
+	document.getElementById("planet_controls").className = "";
 	// recalculate the size and position of the stars based on the new scale
 	Object.keys(stars).forEach(function(starID) {
 		var star = stars[starID];
@@ -123,6 +139,7 @@ function addPlanets() {
 			}
 		} else {
 			planetsLayer.removeChildren();
+			document.getElementById("planet_controls").className = "hidden";
 		}
 
 		stars[starID] = star;
@@ -160,11 +177,31 @@ window.addEventListener("load", function() {
 			name: "planets"
 		});
 		project.addLayer(planetsLayer);
+		uiLayer = new Layer({
+			name: "ui"
+		});
+		project.addLayer(uiLayer);
 		// Setup the view so that 0,0 is in the center of the canvas image
 		view.translate(galaxy.width / 2, galaxy.height / 2);
 
+		scaleTextPoint = new Point(
+			view.getBounds().x + 15,
+			view.getBounds().y + view.getBounds().height - 15
+		);
+		scaleText = new PointText(scaleTextPoint);
+		scaleText.fillColor = base3;
+		scaleText.shadowColor = base02;
+		scaleText.shadowBlur = 2;
+		scaleText.content = "Current Scale Kilometers 1:" + scale;
+		scaleText.addTo(uiLayer);
+
 		view.onResize = function() {
 			view.translate(view.center.x, view.center.y);
+			scaleTextPoint = new Point(
+				view.getBounds().x + 15 + scaleText.getBounds().getSize().width/2,
+				view.getBounds().y + view.getBounds().height - 15
+			);
+			scaleText.setPosition(scaleTextPoint);
 		};
 
 		view.onMouseDown = function(event) {
@@ -187,6 +224,12 @@ window.addEventListener("load", function() {
 				galacticCenter = galacticCenter.subtract(currentStar.calculatePosition());
 			}
 
+			if (paper.project.getItem().getChildren().length === 1) {
+				drawSystem = true;
+			} else {
+				drawSystem = false;
+			}
+
 			// Assuming we have Stars we want to have them added back into the image if they were removed
 			// due to being out of bounds.
 			if (typeof stars !== "undefined") {
@@ -202,16 +245,31 @@ window.addEventListener("load", function() {
 					stars[starID] = star;
 				});
 
-				planetsLayer.getChildren().forEach(function(item) {
-					if (!dragging) {
-						item.planet.orbit.getBounds().setSize(item.planet.calculateOrbitalPath());
-					}
+				addSystem();
 
-					item.planet.orbit.setPosition(item.planet.star.calculatePosition());
-					item.planet.item.setPosition(item.planet.orbit.getFirstSegment().point);
-					item.planet.item.getBounds().setSize(item.planet.calculateSize());
+				planetsLayer.getChildren().forEach(function(item) {
+					if (item.planet) {
+						if (!dragging) {
+							item.planet.orbit.getBounds().setSize(item.planet.calculateOrbitalPath());
+						}
+
+						item.planet.orbit.setPosition(item.planet.star.calculatePosition());
+						item.planet.item.setPosition(item.planet.orbit.getFirstSegment().getPoint());
+						item.planet.item.getBounds().setSize(item.planet.calculateSize());
+					}
 				});
 			}
+
+			if (currentPlanet && !dragging) {
+				galacticCenter = galacticCenter.subtract(currentPlanet.orbit.getFirstSegment().getPoint());
+			}
+
+			scaleText.content = "Current Scale Kilometers 1:" + scale;
+			scaleTextPoint = new Point(
+				view.getBounds().x + 15 + scaleText.getBounds().getSize().width/2,
+				view.getBounds().y + view.getBounds().height - 15
+			);
+			scaleText.setPosition(scaleTextPoint);
 		}
 	}
 
@@ -234,14 +292,6 @@ window.addEventListener("load", function() {
 			:scale <= minZoom
 				? minZoom
 				: scale;
-
-		addPlanets();
-
-		if (paper.project.getItem().getChildren().length === 1) {
-			drawSystem = true;
-		} else {
-			drawSystem = false;
-		}
 
 		// Stop the default action of scrolling from happening
 		return evt.preventDefault() && false;
@@ -365,10 +415,14 @@ req.addEventListener("load", function () {
 
 			// onFrame is called 60 times a second (where possible)
 			star.item.onFrame = function(event) {
-				// If the Star is no longer in the bounds of the canvas view let's
-				// remove it to reduce the required resources
+				// If the Star is no longer in the bounds of the canvas view let's remove it
 				if (!this.isInside(paper.view.bounds) && !drawSystem) {
 					this.remove();
+				}
+				// If the star is still in bounds and we're drawing the system let's
+				// draw the habitable zone
+				else {
+
 				}
 			};
 
@@ -382,7 +436,8 @@ req.addEventListener("load", function () {
 				planet.rotation = getRandomInclusive(0.1, 1.0);
 
 				planet.calculateSize = function() {
-					return minSize;
+					var radius = planetSizes[this.size] * scale;
+					return minSize.width > radius ? minSize : new paper.Size(radius);
 				};
 
 				planet.calculatePosition = function() {
@@ -390,7 +445,7 @@ req.addEventListener("load", function () {
 					var pos = planet.star.calculatePosition()
 						.add(this.star.calculateSize().width/2)
 						.add(this.calculateSize().width)
-						.add(((scales.AU * semimajor_axis) * scale) * Math.LOG10E);
+						.add((scales.AU * semimajor_axis) * scale);
 					pos.y = 0;
 					return pos;
 				};
@@ -407,7 +462,7 @@ req.addEventListener("load", function () {
 					strokeWidth: 1
 				});
 				planet.item = paper.Path.Ellipse({
-					center: planet.orbit.getFirstSegment().point,
+					center: planet.orbit.getFirstSegment().getPoint(),
 					radius: planet.star.calculateSize().add(planet.calculateSize())
 				});
 
@@ -416,8 +471,8 @@ req.addEventListener("load", function () {
 					if (starsLayer.getChildren().length == 1) {
 						if (drawSystem) {
 							this.setPosition(this.planet.star.calculatePosition());
+							this.planet.item.setPosition(this.getFirstSegment().getPoint());
 							this.rotate(this.planet.rotation, this.planet.star.calculatePosition());
-							this.planet.item.setPosition(this.getFirstSegment().point);
 						}
 					}
 				};
@@ -453,8 +508,8 @@ req.addEventListener("load", function () {
 		document.getElementById("start").disabled = false;
 		document.getElementById("start").innerHTML = "Start";
 		// Hardcode an initial focus while working out the zoom movement issue
-		gpStar = getParameterByName("star");
-		gpPlanet = getParameterByName("planet");
+		var gpStar = getParameterByName("star");
+		var gpPlanet = getParameterByName("planet");
 
 		if (gpStar) {
 			setCurrentStar(stars[gpStar]);
@@ -468,6 +523,8 @@ req.addEventListener("load", function () {
 				stars[starID].planets.forEach(function(planet) {
 					if (planet.planet_id == gpPlanet) {
 						setCurrentStar(stars[starID]);
+						currentPlanet = planet;
+						document.getElementById("planetary_position").value = parseInt(planet.planetary_position);
 						var pos = currentStar.calculatePosition();
 						var size = currentStar.calculateSize();
 						optionValue = currentStar.name + "|" + currentStar.star_id + "|" + pos.x + "|" + pos.y + "|" + size.width.toFixed(2) + "|" + currentStar.color.join("_");
