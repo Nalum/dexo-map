@@ -168,26 +168,31 @@ main section label {
 /***
  * System controls navigate around the stars 1 by 1
  */
-main section#system_controls {
+main section#system_controls,
+main section#planet_controls {
 	background-color: #073642;
 	margin-bottom: 10px;
 	padding: 5px;
 }
 
-main section#system_controls p {
+main section#system_controls p,
+main section#planet_controls p {
 	text-align: center;
 }
 
-main section#system_controls div {
+main section#system_controls div,
+main section#planet_controls div {
 	margin: 0 auto;
 	width: 175px;
 }
 
-main section#system_controls div input {
+main section#system_controls div input,
+main section#planet_controls div input {
 	width: 50px;
 }
 
-main section#system_controls div button {
+main section#system_controls div button,
+main section#planet_controls div button {
 	width: 50px;
 }
 
