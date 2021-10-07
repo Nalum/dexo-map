@@ -59,7 +59,7 @@ var stars;
 var currentStar;
 var currentPlanet;
 var starSymbols = {};
-// Setup 2 layers for use in the project
+// Setup 3 layers for use in the project
 // This layer will hold all Stars
 var starsLayer;
 // This layer will hold all Planets
