@@ -36,6 +36,14 @@ const planetSizes = {
 	"XL": scales.REarth*10.0
 };
 
+// Position of Planet indicated by a Letter
+const positionLetter = [
+	"a", "b", "c",
+	"d", "e", "f",
+	"g", "h", "q",
+	"x", "z"
+];
+
 // Minimum Radius allowed
 const minSize = new paper.Size(3,3);
 // Scale will change to show zooming in/out
@@ -107,14 +115,53 @@ function setCurrentStar(star) {
 	currentPlanet = null;
 	document.getElementById('planetary_position').value = 0;
 	document.getElementById('planetary_position').max = currentStar.planets.length;
+	setStarSystemInfo();
+}
+
+function setStarSystemInfo() {
+	document.getElementById("star_name").innerHTML = currentStar.name;
+	document.getElementById("star_id").innerHTML = " #" + currentStar.star_id;
+	document.getElementById("star_no_planets").innerHTML = currentStar.n_planets;
+	document.getElementById("star_effective_temperature").innerHTML = currentStar.effective_temperature;
+	document.getElementById("star_luminosity").innerHTML = currentStar.luminosity;
+	document.getElementById("star_mass").innerHTML = currentStar.mass;
+	document.getElementById("star_quadrant").innerHTML = currentStar.quadrant;
+	document.getElementById("star_region").innerHTML = currentStar.region;
+	document.getElementById("star_sector").innerHTML = currentStar.sector;
+	document.getElementById("star_spectral_type").innerHTML = currentStar.spectral_type;
+	document.getElementById("star_color").innerHTML = currentStar.color.join(", ");
+	document.getElementById("star_habitable_zone").innerHTML = currentStar.habitable_zone;
+	document.getElementById("star_longitude").innerHTML = currentStar.longitude;
+	document.getElementById("star_radial_distance").innerHTML = currentStar.radial_distance;
+	document.getElementById("star_radius").innerHTML = currentStar.radius;
 }
 
 function setCurrentPlanet(index) {
 	if (index > 0) {
 		currentPlanet = currentStar.planets[index-1];
+		setPlanetInfo();
 	} else {
 		currentPlanet = null;
 	}
+}
+
+function setPlanetInfo() {
+	document.getElementById("planet_name").innerHTML = currentStar.name + "-" + 
+		positionLetter[parseInt(currentPlanet.planetary_position.split(" ")[0])-1];
+	document.getElementById("planet_id").innerHTML = " #" + currentPlanet.planet_id;
+	document.getElementById("planet_image").src = currentPlanet.image_url.Scheme + "://" + currentPlanet.image_url.Host + currentPlanet.image_url.Path;
+	document.getElementById("planet_background_star_color").innerHTML = currentPlanet.bg_star_color;
+	document.getElementById("planet_color").innerHTML = currentPlanet.color;
+	document.getElementById("planet_composition").innerHTML = currentPlanet.composition;
+	document.getElementById("planet_large_satellites").innerHTML = currentPlanet.large_satellites;
+	document.getElementById("planet_life").innerHTML = currentPlanet.life == "" ? "None" : currentPlanet.life;
+	document.getElementById("planet_research_impact").innerHTML = currentPlanet.research_impact;
+	document.getElementById("planet_rings").innerHTML = currentPlanet.rings == "" ? "None" : currentPlanet.rings + " (" + currentPlanet.rings_color + ")";
+	document.getElementById("planet_satellites").innerHTML = currentPlanet.satellites;
+	document.getElementById("planet_size").innerHTML = currentPlanet.size;
+	document.getElementById("planet_semimajor_axis").innerHTML = currentPlanet.semimajor_axis;
+	document.getElementById("planet_planetary_position").innerHTML = currentPlanet.planetary_position;
+	document.getElementById("planet_owned").innerHTML = typeof currentPlanet.owned === "undefined" ? "No" : currentPlanet.owned ? "Yes" : "No";
 }
 
 function addSystem() {
@@ -162,6 +209,40 @@ function getRandomInclusive(min, max, int) {
 	}
 
 	return v;
+}
+
+function togglePanel(clicked, other, panel1, panel2) {
+	if (panel1.className == "hidden") {
+		clicked.childNodes.forEach(function (child) {
+			if (child.className == "icon") {
+				child.innerHTML = "&raquo;";
+			}
+		});
+
+		other.childNodes.forEach(function (child) {
+			if (child.className == "icon") {
+				child.innerHTML = "&laquo;";
+			}
+		});
+
+		panel1.className = "";
+		panel2.className = "hidden";
+	} else {
+		clicked.childNodes.forEach(function (child) {
+			if (child.className == "icon") {
+				child.innerHTML = "&laquo;";
+			}
+		});
+
+		other.childNodes.forEach(function (child) {
+			if (child.className == "icon") {
+				child.innerHTML = "&laquo;";
+			}
+		});
+
+		panel1.className = "hidden";
+		panel2.className = "hidden";
+	}
 }
 
 // Setup an initial event to load the paper canvas

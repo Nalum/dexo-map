@@ -254,3 +254,70 @@ main section#data section#filter div {
 	height: 516px;
 	overflow-y: scroll;
 }
+
+/***
+ * System Data styling
+ */
+section#system_data {
+	display: grid;
+	gap: 5px;
+	grid-template-columns: 5;
+	grid-template-rows: 30px 260px;
+	position: absolute;
+	margin: 0;
+	padding: 5px;
+	border-right: 4px solid rgba(0, 43, 54, .75);
+	background-color: rgba(7, 54, 66, .75);
+	height: 253px;
+	top: 100px;
+	right: 10px;
+}
+
+section#system_data div#star_data {
+	font-size: 12px;
+	color: #268bd2;
+	min-width: 400px;
+	grid-column: 1;
+}
+
+section#system_data div#planet_data {
+	font-size: 12px;
+	color: #268bd2;
+	min-width: 400px;
+	grid-column: 3;
+}
+
+section#system_data div#star_data img,
+section#system_data div#planet_data img {
+	float: right;
+}
+
+section#system_data div#show_hide_star_data {
+	grid-column: 2;
+}
+
+section#system_data div#show_hide_planet_data {
+	grid-column: 4;
+}
+
+section#system_data div#show_hide_star_data,
+section#system_data div#show_hide_planet_data {
+	display: inline;
+	vertical-align: middle;
+	font-size: 12px;
+	color: #268bd2;
+	width: 20px;
+	text-align: center;
+	cursor: pointer;
+}
+
+section#system_data p {
+	margin: 2px;
+}
+
+section#system_data p span {
+	color: #859900;
+	float: right;
+	margin: 0px 2px;
+	text-transform: capitalize;
+}
