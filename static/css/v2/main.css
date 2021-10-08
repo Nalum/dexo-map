@@ -16,6 +16,8 @@ $blue:      #268bd2;
 $cyan:      #2aa198;
 $green:     #859900;
 **/
+@import url('https://fonts.googleapis.com/css2?family=Audiowide&display=swap');
+
 html * {
 	margin: 0;
 	padding: 0;
@@ -24,6 +26,8 @@ html * {
 html, body {
 	height: 100%;
 	overflow: hidden;
+	font-family: 'Audiowide', cursive;
+	font-size: 10px;
 }
 
 ::selection, ::-moz-selection {
@@ -124,7 +128,7 @@ header h1, header p, footer p {
 
 header section,
 footer section {
-	background-color: #073642;
+	background-color: rgba(7, 54, 66, .75);
 	padding: 5px;
 }
 
@@ -170,7 +174,7 @@ main section label {
  */
 main section#system_controls,
 main section#planet_controls {
-	background-color: #073642;
+	background-color: rgba(7, 54, 66, .75);
 	margin-bottom: 10px;
 	padding: 5px;
 }
@@ -183,7 +187,7 @@ main section#planet_controls p {
 main section#system_controls div,
 main section#planet_controls div {
 	margin: 0 auto;
-	width: 175px;
+	width: 176px;
 }
 
 main section#system_controls div input,
@@ -204,10 +208,10 @@ main section#data {
 }
 
 main section#data section {
-	background-color: #073642;
+	background-color: rgba(7, 54, 66, .75);
 	margin: 0;
 	padding: 5px;
-	height: 628px;
+	height: 665px;
 }
 
 main section#data span.note {
@@ -247,6 +251,6 @@ main section#data section h1 {
 }
 
 main section#data section#filter div {
-	height: 482px;
+	height: 516px;
 	overflow-y: scroll;
 }
