@@ -61,9 +61,9 @@ var currentPlanet;
 var starSymbols = {};
 // Setup 3 layers for use in the project
 // This layer will hold all Stars
-var starsLayer;
+var galaxyLayer;
 // This layer will hold all Planets
-var planetsLayer;
+var systemLayer;
 // This layer will hold UI elements
 var uiLayer;
 
@@ -102,7 +102,7 @@ function starPercentCalc() {
 }
 
 function setCurrentStar(star) {
-	planetsLayer.removeChildren();
+	systemLayer.removeChildren();
 	currentStar = star;
 	currentPlanet = null;
 	document.getElementById('planetary_position').value = 0;
@@ -125,20 +125,20 @@ function addSystem() {
 		star.calculatePosition();
 		star.calculateSize();
 
-		if (starsLayer.getChildren().length == 1) {
+		if (galaxyLayer.getChildren().length == 1) {
 			if (star.star_id == currentStar.star_id) {
 				star.planets.forEach(function(planet) {
 					if (!planet.orbit.parent) {
-						planet.orbit.addTo(planetsLayer);
+						planet.orbit.addTo(systemLayer);
 					}
 
 					if (!planet.item.parent) {
-						planet.item.addTo(planetsLayer);
+						planet.item.addTo(systemLayer);
 					}
 				});
 			}
 		} else {
-			planetsLayer.removeChildren();
+			systemLayer.removeChildren();
 			document.getElementById("planet_controls").className = "hidden";
 		}
 
@@ -169,14 +169,14 @@ window.addEventListener("load", function() {
 	paper.setup(galaxy);
 
 	with (paper) {
-		starsLayer = new Layer({
+		galaxyLayer = new Layer({
 			name: "stars"
 		});
-		project.addLayer(starsLayer);
-		planetsLayer = new Layer({
+		project.addLayer(galaxyLayer);
+		systemLayer = new Layer({
 			name: "planets"
 		});
-		project.addLayer(planetsLayer);
+		project.addLayer(systemLayer);
 		uiLayer = new Layer({
 			name: "ui"
 		});
@@ -239,7 +239,7 @@ window.addEventListener("load", function() {
 
 					if (paper.view.bounds.contains(pos) && star.item.parent === null) {
 						star.calculateSize();
-						star.item.addTo(starsLayer);
+						star.item.addTo(galaxyLayer);
 					}
 
 					stars[starID] = star;
@@ -247,7 +247,7 @@ window.addEventListener("load", function() {
 
 				addSystem();
 
-				planetsLayer.getChildren().forEach(function(item) {
+				systemLayer.getChildren().forEach(function(item) {
 					if (item.planet) {
 						if (!dragging) {
 							item.planet.orbit.getBounds().setSize(item.planet.calculateOrbitalPath());
@@ -368,6 +368,24 @@ req.addEventListener("load", function () {
 
 				if (this.item) {
 					this.item.setPosition(point);
+
+					if (galaxyLayer.getChildren().length === 1 && drawSystem && this.star_id === currentStar.star_id) {
+						if (this.calculateHabitableZoneRadius()[0] !== this.habitableZoneStart.getBounds().getSize().width) {
+							if (this.habitableZone) {
+								this.habitableZone.remove();
+							}
+
+							this.habitableZoneStart.getBounds().setSize(new paper.Size(this.calculateHabitableZoneRadius()[0]));
+							this.habitableZoneStart.setPosition(point);
+							this.habitableZoneEnd.getBounds().setSize(new paper.Size(this.calculateHabitableZoneRadius()[1]));
+							this.habitableZoneEnd.setPosition(point);
+							this.habitableZone = this.habitableZoneEnd.exclude(this.habitableZoneStart);
+							this.habitableZone.addTo(systemLayer);
+							this.habitableZone.fillColor.setAlpha(0.1);
+						}
+
+						this.habitableZone.setPosition(point);
+					}
 				}
 
 				return point;
@@ -396,7 +414,29 @@ req.addEventListener("load", function () {
 
 			// Here we are adding the Star to the canvas
 			star.item = starSymbols[color].place(star.calculatePosition());
-			star.item.addTo(starsLayer);
+			star.item.addTo(galaxyLayer);
+
+			// Calculate Habitable Zone radius
+			star.calculateHabitableZoneRadius = function() {
+				var zoneStart = parseFloat(this.habitable_zone.split(" - ")[0]);
+				var zoneEnd = parseFloat(this.habitable_zone.split(" - ")[1]);
+				var zoneStartSize = ((scales.AU * zoneStart) * scale) + this.calculateSize().width;
+				var zoneEndSize = ((scales.AU * zoneEnd) * scale) + this.calculateSize().width;
+				return [zoneStartSize, zoneEndSize]
+			};
+			// Setup Habitable Zone for display
+			star.habitableZoneStart = new paper.Path.Ellipse({
+				center: star.calculatePosition(),
+				radius: star.calculateHabitableZoneRadius()[0],
+				fillColor: green
+			});
+			star.habitableZoneEnd = new paper.Path.Ellipse({
+				center: star.calculatePosition(),
+				radius: star.calculateHabitableZoneRadius()[1],
+				fillColor: green
+			});
+			star.habitableZoneStart.remove();
+			star.habitableZoneEnd.remove();
 
 			// For now if you click on the star it will log the ID to the console
 			// Want to do more here with selection/info/planet display
@@ -419,15 +459,7 @@ req.addEventListener("load", function () {
 				if (!this.isInside(paper.view.bounds) && !drawSystem) {
 					this.remove();
 				}
-				// If the star is still in bounds and we're drawing the system let's
-				// draw the habitable zone
-				else {
-
-				}
 			};
-
-			// Add the Star as a reference to item
-			star.item.star = stars[starID];
 
 			// Loop over each Planet and set them up for later use
 			// Might be a better way of doing this
@@ -468,7 +500,7 @@ req.addEventListener("load", function () {
 
 				planet.orbit.planet = planet;
 				planet.orbit.onFrame = function() {
-					if (starsLayer.getChildren().length == 1) {
+					if (galaxyLayer.getChildren().length == 1) {
 						if (drawSystem) {
 							this.setPosition(this.planet.star.calculatePosition());
 							this.planet.item.setPosition(this.getFirstSegment().getPoint());
@@ -499,6 +531,8 @@ req.addEventListener("load", function () {
 				star.planets[index] = planet;
 			});
 
+			// Add the Star as a reference to item
+			star.item.star = star;
 			stars[starID] = star;
 		});
 
