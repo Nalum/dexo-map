@@ -15,7 +15,7 @@ var starTotal = 0;
 var stars;
 var currentStar;
 var currentPlanet;
-var starSymbols = {};
+var symbols = {};
 // Setup 3 layers for use in the project
 // This layer will hold all Stars
 var galaxyLayer;

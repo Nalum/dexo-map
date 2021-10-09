@@ -16,7 +16,7 @@ req.addEventListener("load", function () {
 			var color = star.color.join("_");
 
 			// Here we are adding the Star to the canvas
-			if (typeof starSymbols[color] === "undefined") {
+			if (typeof symbols[color] === "undefined") {
 				var ellipse = new paper.Path.Ellipse({
 					center: new paper.Point(0,0),
 					radius: minSize
@@ -36,7 +36,7 @@ req.addEventListener("load", function () {
 					ellipse.fillColor = star.color;
 				}
 
-				starSymbols[color] = new paper.Symbol(ellipse);
+				symbols[color] = new paper.Symbol(ellipse);
 			}
 		});
 
@@ -110,7 +110,7 @@ req.addEventListener("load", function () {
 			};
 
 			// Here we are adding the Star to the canvas
-			star.item = starSymbols[color].place(star.calculatePosition());
+			star.item = symbols[color].place(star.calculatePosition());
 			star.item.addTo(galaxyLayer);
 
 			// Calculate Habitable Zone radius
@@ -272,3 +272,41 @@ req.addEventListener("load", function () {
 		}
 	}
 });
+
+function getStakeDexo(cardanoAddress) {
+	if (cardanoAddress == "") {
+		cardanoAddress = "stake1uydj7egwaj020lstvxctmm67ssyfkxpdcg8tqpsm9f5heug8n0gdz";
+	}
+
+	var button = document.getElementById("fetch-dexo")
+	button.disabled = true;
+	button.innerHTML = "- Loading -";
+
+	var req = new XMLHttpRequest();
+	req.overrideMimeType("application/json");
+	req.open('GET', '/stake/' + cardanoAddress, true);
+
+	req.onreadystatechange = function () {
+		var starSelect = document.getElementById("filter_star_star");
+		starSelect.value = "--";
+		button.innerHTML = "Fetch";
+		button.disabled = false;
+		resetFilters();
+
+		if (req.readyState == 4 && req.status == "200") {
+			var stakeStars = JSON.parse(req.responseText);
+
+			stakeStars.forEach(function(star) {
+				stars[star.star_id].planets = star.planets;
+
+				starSelect.childNodes.forEach(function(option){
+					if (option.value.includes("|"+star.star_id+"|")) {
+						option.selected = true;
+					}
+				});
+			});
+		}
+	};
+
+	req.send(null);
+}
