@@ -89,7 +89,7 @@ function getRandomInclusive(min, max, int) {
 	return v;
 }
 
-// Setup an initial event to load the paper canvas
+// Setup an initial event to load the paper canvas, mouse zoom event and the star data
 window.addEventListener("load", function() {
 	paper.setup(galaxy);
 
