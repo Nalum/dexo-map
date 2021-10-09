@@ -10,35 +10,19 @@ req.addEventListener("load", function () {
 		var filterStarStar = document.getElementById("filter_star_star");
 		var starSystemID = document.getElementById("star_system_id");
 
-		// Loop over the star data to create symbols for each star color
-		Object.keys(stars).forEach(function (starID) {
-			var star = stars[starID];
-			var color = star.color.join("_");
-
-			// Here we are adding the Star to the canvas
-			if (typeof symbols[color] === "undefined") {
-				var ellipse = new paper.Path.Ellipse({
-					center: new paper.Point(0,0),
-					radius: minSize
-				});
-
-				// This is calculating the stars color depending on whether there is more than 1
-				if (star.color.length > 1) {
-					ellipse.fillColor = {
-						gradient: {
-							stops: star.color,
-							radial: true
-						},
-						origin: ellipse.position,
-						destination: ellipse.bounds.rightCenter
-					};
-				} else {
-					ellipse.fillColor = star.color;
-				}
-
-				symbols[color] = new paper.Symbol(ellipse);
-			}
+		// Setup Symbols for the habitable zones
+		var ringStart = new paper.Path.Ellipse({
+			center: new paper.Point(0,0),
+			size: new paper.Size(10,10),
+			fillColor: green
 		});
+		var ringEnd = new paper.Path.Ellipse({
+			center: new paper.Point(0,0),
+			size: new paper.Size(20,20),
+			fillColor: green
+		});
+		symbols.ring_start = new paper.Symbol(ringStart);
+		symbols.ring_end = new paper.Symbol(ringEnd);
 
 		// Loop over the star data so that we can build the image
 		Object.keys(stars).forEach(function (starID) {
@@ -67,16 +51,16 @@ req.addEventListener("load", function () {
 					this.item.setPosition(point);
 
 					if (galaxyLayer.getChildren().length === 1 && drawSystem && this.star_id === currentStar.star_id) {
-						if (this.calculateHabitableZoneRadius()[0] !== this.habitableZoneStart.getBounds().getSize().width) {
+						if (!this.habitableZone || this.calculateHabitableZoneRadius()[1] !== this.habitableZone.getBounds().getSize().width) {
 							if (this.habitableZone) {
 								this.habitableZone.remove();
 							}
 
-							this.habitableZoneStart.getBounds().setSize(new paper.Size(this.calculateHabitableZoneRadius()[0]));
-							this.habitableZoneStart.setPosition(point);
-							this.habitableZoneEnd.getBounds().setSize(new paper.Size(this.calculateHabitableZoneRadius()[1]));
-							this.habitableZoneEnd.setPosition(point);
-							this.habitableZone = this.habitableZoneEnd.exclude(this.habitableZoneStart);
+							symbols.ring_start.definition.getBounds().setSize(new paper.Size(this.calculateHabitableZoneRadius()[0]));
+							symbols.ring_start.definition.setPosition(point);
+							symbols.ring_end.definition.getBounds().setSize(new paper.Size(this.calculateHabitableZoneRadius()[1]));
+							symbols.ring_end.definition.setPosition(point);
+							this.habitableZone = symbols.ring_end.definition.exclude(symbols.ring_start.definition);
 							this.habitableZone.addTo(systemLayer);
 							this.habitableZone.fillColor.setAlpha(0.1);
 						}
@@ -110,8 +94,24 @@ req.addEventListener("load", function () {
 			};
 
 			// Here we are adding the Star to the canvas
-			star.item = symbols[color].place(star.calculatePosition());
-			star.item.addTo(galaxyLayer);
+			star.item = new paper.Path.Ellipse({
+				center: new paper.Point(0,0),
+				radius: minSize
+			});
+
+			// This is calculating the stars color depending on whether there is more than 1
+			if (star.color.length > 1) {
+				star.item.fillColor = {
+					gradient: {
+						stops: star.color,
+						radial: true
+					},
+					origin: star.item.getPosition(),
+					destination: star.item.getBounds().rightCenter
+				};
+			} else {
+				star.item.fillColor = star.color;
+			}
 
 			// Calculate Habitable Zone radius
 			star.calculateHabitableZoneRadius = function() {
@@ -121,19 +121,6 @@ req.addEventListener("load", function () {
 				var zoneEndSize = ((scales.AU * zoneEnd) * scale) + this.calculateSize().width;
 				return [zoneStartSize, zoneEndSize]
 			};
-			// Setup Habitable Zone for display
-			star.habitableZoneStart = new paper.Path.Ellipse({
-				center: star.calculatePosition(),
-				radius: star.calculateHabitableZoneRadius()[0],
-				fillColor: green
-			});
-			star.habitableZoneEnd = new paper.Path.Ellipse({
-				center: star.calculatePosition(),
-				radius: star.calculateHabitableZoneRadius()[1],
-				fillColor: green
-			});
-			star.habitableZoneStart.remove();
-			star.habitableZoneEnd.remove();
 
 			// For now if you click on the star it will log the ID to the console
 			// Want to do more here with selection/info/planet display
@@ -155,6 +142,13 @@ req.addEventListener("load", function () {
 				// If the Star is no longer in the bounds of the canvas view let's remove it
 				if (!this.isInside(paper.view.bounds) && !drawSystem) {
 					this.remove();
+				}
+
+				if (this.star.selected || this.star.star_id === currentStar.star_id) {
+					this.setStrokeColor(violet);
+					this.setStrokeWidth(2);
+				} else {
+					this.setStrokeWidth(0);
 				}
 			};
 

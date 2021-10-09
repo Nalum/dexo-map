@@ -109,6 +109,7 @@ window.addEventListener("load", function() {
 		// Setup the view so that 0,0 is in the center of the canvas image
 		view.translate(galaxy.width / 2, galaxy.height / 2);
 
+		// Setup current scale ratio
 		scaleTextPoint = new Point(
 			view.getBounds().x + 15,
 			view.getBounds().y + view.getBounds().height - 15
