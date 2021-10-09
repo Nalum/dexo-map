@@ -111,8 +111,33 @@ function reset() {
 	document.getElementById('filter_star_star').value = "--";
 	document.getElementById('filter_planet_limit_owned').checked = false;
 	galacticCenter = new paper.Point(0,0);
-	scale = 7e-16;
+	scale = minZoom;
 	resetFilters();
+}
+
+// getParameterByName is used to set the currentStar var if either
+// star or planet is set as a GET parameter e.g. ?star=991
+function getParameterByName(name, url = window.location.href) {
+	name = name.replace(/[\[\]]/g, '\\$&');
+	var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+		results = regex.exec(url);
+	if (!results || !results[2]) return null;
+	return decodeURIComponent(results[2].replace(/\+/g, ' '));
+}
+
+// setStarSelect will change the multiselect star list to have only 1 selected
+// star based on the ID passed in
+function setStarSelect(starID) {
+	var starSelect = document.getElementById("filter_star_star");
+	starSelect.value = "--";
+
+	starSelect.childNodes.forEach(function(option) {
+		if (option.value.includes("|"+starID+"|")) {
+			option.selected = true;
+		}
+	});
+
+	starPercentCalc();
 }
 
 function populateSelects() {
@@ -192,4 +217,83 @@ function populateSelects() {
 			}
 		});
 	});
+}
+
+function togglePanel(clicked, other, panel1, panel2) {
+	if (panel1.className == "hidden") {
+		clicked.childNodes.forEach(function (child) {
+			if (child.className == "icon") {
+				child.innerHTML = "&raquo;";
+			}
+		});
+
+		other.childNodes.forEach(function (child) {
+			if (child.className == "icon") {
+				child.innerHTML = "&laquo;";
+			}
+		});
+
+		panel1.className = "";
+		panel2.className = "hidden";
+	} else {
+		clicked.childNodes.forEach(function (child) {
+			if (child.className == "icon") {
+				child.innerHTML = "&laquo;";
+			}
+		});
+
+		other.childNodes.forEach(function (child) {
+			if (child.className == "icon") {
+				child.innerHTML = "&laquo;";
+			}
+		});
+
+		panel1.className = "hidden";
+		panel2.className = "hidden";
+	}
+}
+
+// Calculate the Percentage of Stars Selected against the Total
+function starPercentCalc() {
+	var count = document.getElementById("filter_star_count");
+	var percent = document.getElementById("filter_star_percent");
+	count.innerHTML = document.getElementById("filter_star_star").selectedOptions.length;
+	percent.innerHTML = ((document.getElementById("filter_star_star").selectedOptions.length / starTotal) * 100).toFixed(4);
+}
+
+function setStarSystemInfo() {
+	document.getElementById("star_name").innerHTML = currentStar.name;
+	document.getElementById("star_id").innerHTML = " #" + currentStar.star_id;
+	document.getElementById("star_no_planets").innerHTML = currentStar.n_planets;
+	document.getElementById("star_effective_temperature").innerHTML = currentStar.effective_temperature;
+	document.getElementById("star_luminosity").innerHTML = currentStar.luminosity;
+	document.getElementById("star_mass").innerHTML = currentStar.mass;
+	document.getElementById("star_quadrant").innerHTML = currentStar.quadrant;
+	document.getElementById("star_region").innerHTML = currentStar.region;
+	document.getElementById("star_sector").innerHTML = currentStar.sector;
+	document.getElementById("star_spectral_type").innerHTML = currentStar.spectral_type;
+	document.getElementById("star_color").innerHTML = currentStar.color.join(", ");
+	document.getElementById("star_habitable_zone").innerHTML = currentStar.habitable_zone;
+	document.getElementById("star_longitude").innerHTML = currentStar.longitude;
+	document.getElementById("star_radial_distance").innerHTML = currentStar.radial_distance;
+	document.getElementById("star_radius").innerHTML = currentStar.radius;
+}
+
+function setPlanetInfo() {
+	document.getElementById("planet_name").innerHTML = currentStar.name + "-" + 
+		positionLetter[parseInt(currentPlanet.planetary_position.split(" ")[0])-1];
+	document.getElementById("planet_id").innerHTML = " #" + currentPlanet.planet_id;
+	document.getElementById("planet_image").src = currentPlanet.image_url.Scheme + "://" + currentPlanet.image_url.Host + currentPlanet.image_url.Path;
+	document.getElementById("planet_background_star_color").innerHTML = currentPlanet.bg_star_color;
+	document.getElementById("planet_color").innerHTML = currentPlanet.color;
+	document.getElementById("planet_composition").innerHTML = currentPlanet.composition;
+	document.getElementById("planet_large_satellites").innerHTML = currentPlanet.large_satellites;
+	document.getElementById("planet_life").innerHTML = currentPlanet.life == "" ? "None" : currentPlanet.life;
+	document.getElementById("planet_research_impact").innerHTML = currentPlanet.research_impact;
+	document.getElementById("planet_rings").innerHTML = currentPlanet.rings == "" ? "None" : currentPlanet.rings + " (" + currentPlanet.rings_color + ")";
+	document.getElementById("planet_satellites").innerHTML = currentPlanet.satellites;
+	document.getElementById("planet_size").innerHTML = currentPlanet.size;
+	document.getElementById("planet_semimajor_axis").innerHTML = currentPlanet.semimajor_axis;
+	document.getElementById("planet_planetary_position").innerHTML = currentPlanet.planetary_position;
+	document.getElementById("planet_owned").innerHTML = typeof currentPlanet.owned === "undefined" ? "No" : currentPlanet.owned ? "Yes" : "No";
 }

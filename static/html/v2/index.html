@@ -172,8 +172,13 @@
 	</main>
 
 	<section id="system_data">
+		<div id="show_hide_star_data" onclick="togglePanel(this, document.getElementById('show_hide_planet_data'), document.getElementById('star_data'), document.getElementById('planet_data'));">
+			<span class="icon">&laquo;</span>
+			<span class="rotate">STAR</span>
+			<span class="icon">&laquo;</span>
+		</div>
 		<div id="star_data" class="hidden">
-			<img src="https://ipfs.dexoworlds.com/ipfs/QmRgJH1Pxz6fcniExmbY9UMHkxyuw2iVH9ZNofNubFE7rd" id="star_image" width="100" height="100"/>
+			<img src="https://ipfs.dexoworlds.com/ipfs/QmRgJH1Pxz6fcniExmbY9UMHkxyuw2iVH9ZNofNubFE7rd" id="star_image" width="110" height="110"/>
 			<p>Name: <span id="star_id"></span><span id="star_name"></span></p>
 			<p>No. Planets: <span id="star_no_planets"></span></p>
 			<p>Effective Temperature: <span id="star_effective_temperature"></span></p>
@@ -189,13 +194,8 @@
 			<p>Radial Distance: <span id="star_radial_distance"></span></p>
 			<p>Radius: <span id="star_radius"></span></p>
 		</div>
-		<div id="show_hide_star_data" onclick="togglePanel(this, document.getElementById('show_hide_planet_data'), document.getElementById('star_data'), document.getElementById('planet_data'));">
-			<span class="icon">&laquo;</span>
-			<span class="rotate">STAR</span>
-			<span class="icon">&laquo;</span>
-		</div>
 		<div id="planet_data" class="hidden">
-			<img src="https://ipfs.dexoworlds.com/ipfs/QmRgJH1Pxz6fcniExmbY9UMHkxyuw2iVH9ZNofNubFE7rd" id="planet_image" width="100" height="100"/>
+			<img src="https://ipfs.dexoworlds.com/ipfs/QmRgJH1Pxz6fcniExmbY9UMHkxyuw2iVH9ZNofNubFE7rd" id="planet_image" width="110" height="110"/>
 			<p>Name: <span id="planet_id"></span><span id="planet_name"></span></p>
 			<p>Research Impact: <span id="planet_research_impact"></span></p>
 			<p>Life: <span id="planet_life"></span></p>
@@ -227,7 +227,9 @@
 	</footer>
 
 	<script type="text/javascript" src="/static/javascript/v2/paper-full.js"></script>
+	<script type="text/javascript" src="/static/javascript/v2/constants.js"></script>
 	<script type="text/javascript" src="/static/javascript/v2/main.js"></script>
+	<script type="text/javascript" src="/static/javascript/v2/fetch-data.js"></script>
 	<script type="text/javascript" src="/static/javascript/v2/galaxy.js"></script>
 </body>
 
