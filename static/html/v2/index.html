@@ -86,10 +86,10 @@
 					<input type="checkbox" id="filter_star_alpha" name="filter_star_alpha" />
 					<label for="filter_star_alpha">Enable Luminosity</label>
 					<br />
-					<input type="checkbox" id="filter_star_limit_owned_in_system" name="filter_star_limit_owned_in_system" onclick="document.getElementById('filter_star_limit_owned_system').checked=false;" />
+					<input type="checkbox" id="filter_star_limit_owned_in_system" name="filter_star_limit_owned_in_system" onclick="document.getElementById('filter_star_limit_owned_system').checked=false; updateStarSelect();" />
 					<label for="filter_star_limit_owned_in_system">Limit Owned In System</label>
 					<br />
-					<input type="checkbox" id="filter_star_limit_owned_system" name="filter_star_limit_owned_system" onclick="document.getElementById('filter_star_limit_owned_in_system').checked=false;" />
+					<input type="checkbox" id="filter_star_limit_owned_system" name="filter_star_limit_owned_system" onclick="document.getElementById('filter_star_limit_owned_in_system').checked=false; updateStarSelect();" />
 					<label for="filter_star_limit_owned_system">Limit Owned System</label>
 					<br />
 					<label for="filter_star_star">Stars:</label>

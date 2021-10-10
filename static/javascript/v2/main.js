@@ -113,6 +113,9 @@ function reset() {
 	galacticCenter = new paper.Point(0,0);
 	scale = minZoom;
 	resetFilters();
+	Object.keys(stars).forEach(function(starID) {
+		stars[starID].selected = false;
+	});
 }
 
 // getParameterByName is used to set the currentStar var if either
@@ -296,4 +299,297 @@ function setPlanetInfo() {
 	document.getElementById("planet_semimajor_axis").innerHTML = currentPlanet.semimajor_axis;
 	document.getElementById("planet_planetary_position").innerHTML = currentPlanet.planetary_position;
 	document.getElementById("planet_owned").innerHTML = typeof currentPlanet.owned === "undefined" ? "No" : currentPlanet.owned ? "Yes" : "No";
+}
+
+function updateStarSelect() {
+	var starFilterString = generateStarFilterString();
+	var planetFilterString = generatePlanetFilterString();
+	var matchingStars = [];
+	var starSelect = document.getElementById("filter_star_star");
+	var planetCount = 0;
+	var limitOwnedInSystem = document.getElementById("filter_star_limit_owned_in_system").checked;
+	var limitOwnedSystem = document.getElementById("filter_star_limit_owned_system").checked;
+	var limitOwnedPlanets = document.getElementById("filter_planet_limit_owned").checked;
+	starSelect.value = "--";
+	Object.keys(stars).forEach(function(starID) {
+		stars[starID].selected = false;
+	});
+
+	if (starFilterString !== "") {
+		resetPlanetFilters();
+
+		Object.keys(stars).forEach(function(starID) {
+			stars[starID].selected = false;
+			var innerStarFilterString = generateStarFilterString(stars[starID]);
+			ownedInSystem = false;
+			ownedSystem = false;
+			ownedPlanetCount = 0;
+
+			stars[starID].planets.forEach(function(planet) {
+				if (planet.owned) {
+					ownedPlanetCount++;
+					ownedInSystem = true;
+				}
+			});
+
+			if (ownedPlanetCount === stars[starID].n_planets) {
+				ownedSystem = true;
+			}
+
+			if (innerStarFilterString === starFilterString) {
+				if (limitOwnedInSystem) {
+					if (ownedInSystem) {
+						if (matchingStars.indexOf(starID) == -1) {
+							matchingStars.push(starID);
+						}
+					}
+				} else if (limitOwnedSystem) {
+					if (ownedSystem) {
+						if (matchingStars.indexOf(starID) == -1) {
+							matchingStars.push(starID);
+						}
+					}
+				} else {
+					if (matchingStars.indexOf(starID) == -1) {
+						matchingStars.push(starID);
+					}
+				}
+			}
+		});
+	}
+
+	if (planetFilterString !== "") {
+		resetStarFilters();
+
+		Object.keys(stars).forEach(function(starID) {
+			stars[starID].selected = false;
+			stars[starID].planets.forEach(function(planet) {
+				var innerPlanetFilterString = generatePlanetFilterString(planet);
+
+				if (innerPlanetFilterString === planetFilterString) {
+					if (limitOwnedPlanets) {
+						if (planet.owned) {
+							if (matchingStars.indexOf(planet.host_star.star_id) == -1) {
+								matchingStars.push(planet.host_star.star_id);
+							}
+
+							planetCount++;
+						}
+					} else {
+						if (matchingStars.indexOf(planet.host_star.star_id) == -1) {
+							matchingStars.push(planet.host_star.star_id);
+						}
+
+						planetCount++;
+					}
+				}
+			});
+		});
+	}
+
+	matchingStars.forEach(function(starID) {
+		stars[starID].selected = true;
+		starSelect.childNodes.forEach(function(option) {
+			if (option.value.includes("|"+starID+"|")) {
+				option.selected = true;
+			}
+		});
+	});
+
+	starPercentCalc();
+	document.getElementById("filter_planet_count").innerHTML = planetCount;
+	document.getElementById("filter_planet_percent").innerHTML = ((planetCount/planetTotal)*100).toFixed(4);
+}
+
+function generateStarFilterString(star) {
+	var filterString = "";
+	var spectral_type = typeof star !== "undefined" ? star.spectral_type : document.getElementById("filter_star_spectral_type").value;
+	var color = typeof star !== "undefined" ? star.color.join("_") : document.getElementById("filter_star_color").value;
+	var effective_temperature = typeof star !== "undefined" ? star.effective_temperature : document.getElementById("filter_star_effective_temperature").value;
+	var region = typeof star !== "undefined" ? star.region : document.getElementById("filter_star_region").value;
+	var quadrant = typeof star !== "undefined" ? star.quadrant : document.getElementById("filter_star_quadrant").value;
+	var sector = typeof star !== "undefined" ? star.sector : document.getElementById("filter_star_sector").value;
+	var radius = typeof star !== "undefined" ? star.radius : document.getElementById("filter_star_radius").value;
+	var luminosity = typeof star !== "undefined" ? star.luminosity : document.getElementById("filter_star_luminosity").value;
+	var mass = typeof star !== "undefined" ? star.mass : document.getElementById("filter_star_mass").value;
+	var n_planets = typeof star !== "undefined" ? star.n_planets : document.getElementById("filter_star_n_planets").value;
+
+	if (document.getElementById("filter_star_spectral_type").value != "--") {
+		filterString += spectral_type;
+	}
+
+	if (document.getElementById("filter_star_color").value != "--") {
+		if (filterString.length > 0) {
+			filterString += "|";
+		}
+
+		filterString += color;
+	}
+
+	if (document.getElementById("filter_star_effective_temperature").value != "--") {
+		if (filterString.length > 0) {
+			filterString += "|";
+		}
+
+		filterString += effective_temperature;
+	}
+
+	if (document.getElementById("filter_star_region").value != "--") {
+		if (filterString.length > 0) {
+			filterString += "|";
+		}
+
+		filterString += region;
+	}
+
+	if (document.getElementById("filter_star_quadrant").value != "--") {
+		if (filterString.length > 0) {
+			filterString += "|";
+		}
+
+		filterString += quadrant;
+	}
+
+	if (document.getElementById("filter_star_sector").value != "--") {
+		if (filterString.length > 0) {
+			filterString += "|";
+		}
+
+		filterString += sector;
+	}
+
+	if (document.getElementById("filter_star_radius").value != "--") {
+		if (filterString.length > 0) {
+			filterString += "|";
+		}
+
+		filterString += radius;
+	}
+
+	if (document.getElementById("filter_star_luminosity").value != "--") {
+		if (filterString.length > 0) {
+			filterString += "|";
+		}
+
+		filterString += luminosity;
+	}
+
+	if (document.getElementById("filter_star_mass").value != "--") {
+		if (filterString.length > 0) {
+			filterString += "|";
+		}
+
+		filterString += mass;
+	}
+
+	if (document.getElementById("filter_star_n_planets").value != "--") {
+		if (filterString.length > 0) {
+			filterString += "|";
+		}
+
+		filterString += n_planets;
+	}
+
+	return filterString;
+}
+
+function generatePlanetFilterString(planet) {
+	var filterString = "";
+	var bg_star_color = typeof planet !== "undefined" ? planet.bg_star_color : document.getElementById("filter_planet_bg_star_color").value;
+	var color = typeof planet !== "undefined" ? planet.color : document.getElementById("filter_planet_color").value;
+	var composition = typeof planet !== "undefined" ? planet.composition : document.getElementById("filter_planet_composition").value;
+	var large_satellites = typeof planet !== "undefined" ? planet.large_satellites : document.getElementById("filter_planet_large_satellites").value;
+	var life = typeof planet !== "undefined" ? (planet.life === "" ? "none" : planet.life) : document.getElementById("filter_planet_life").value;
+	var planetary_position = typeof planet !== "undefined" ? planet.planetary_position.split(" ")[0] : document.getElementById("filter_planet_planetary_position").value;
+	var research_impact = typeof planet !== "undefined" ? planet.research_impact : document.getElementById("filter_planet_research_impact").value;
+	var rings = typeof planet !== "undefined" ? (planet.rings === "" ? "none" : planet.rings) : document.getElementById("filter_planet_rings").value;
+	var rings_color = typeof planet !== "undefined" ? (planet.rings_color === "" ? "none": planet.rings_color) : document.getElementById("filter_planet_rings_color").value;
+	var satellites = typeof planet !== "undefined" ? planet.satellites : document.getElementById("filter_planet_satellites").value;
+	var size = typeof planet !== "undefined" ? planet.size : document.getElementById("filter_planet_size").value;
+
+	if (document.getElementById("filter_planet_bg_star_color").value != "--") {
+		filterString += bg_star_color;
+	}
+
+	if (document.getElementById("filter_planet_color").value != "--") {
+		if (filterString.length > 0) {
+			filterString += "|";
+		}
+
+		filterString += color;
+	}
+
+	if (document.getElementById("filter_planet_composition").value != "--") {
+		if (filterString.length > 0) {
+			filterString += "|";
+		}
+
+		filterString += composition;
+	}
+
+	if (document.getElementById("filter_planet_large_satellites").value != "--") {
+		if (filterString.length > 0) {
+			filterString += "|";
+		}
+
+		filterString += large_satellites;
+	}
+
+	if (document.getElementById("filter_planet_life").value != "--") {
+		if (filterString.length > 0) {
+			filterString += "|";
+		}
+
+		filterString += life;
+	}
+
+	if (document.getElementById("filter_planet_planetary_position").value != "--") {
+		if (filterString.length > 0) {
+			filterString += "|";
+		}
+
+		filterString += planetary_position;
+	}
+
+	if (document.getElementById("filter_planet_research_impact").value != "--") {
+		if (filterString.length > 0) {
+			filterString += "|";
+		}
+
+		filterString += research_impact;
+	}
+
+	if (document.getElementById("filter_planet_rings").value != "--") {
+		if (filterString.length > 0) {
+			filterString += "|";
+		}
+
+		filterString += rings;
+	}
+
+	if (document.getElementById("filter_planet_rings_color").value != "--") {
+		if (filterString.length > 0) {
+			filterString += "|";
+		}
+
+		filterString += rings_color;
+	}
+
+	if (document.getElementById("filter_planet_satellites").value != "--") {
+		if (filterString.length > 0) {
+			filterString += "|";
+		}
+
+		filterString += satellites;
+	}
+
+	if (document.getElementById("filter_planet_size").value != "--") {
+		if (filterString.length > 0) {
+			filterString += "|";
+		}
+
+		filterString += size;
+	}
+
+	return filterString;
 }

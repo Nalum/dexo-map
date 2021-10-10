@@ -144,7 +144,7 @@ req.addEventListener("load", function () {
 					this.remove();
 				}
 
-				if (this.star.selected || this.star.owned_planet || this.star.owned || this.star.star_id === currentStar.star_id) {
+				if (this.star.selected) {
 					var color = this.star.owned
 						? green
 						: this.star.owned_planet
@@ -290,6 +290,7 @@ function getStakeDexo(cardanoAddress) {
 	var button = document.getElementById("fetch-dexo")
 	button.disabled = true;
 	button.innerHTML = "- Loading -";
+	reset();
 
 	var req = new XMLHttpRequest();
 	req.overrideMimeType("application/json");
@@ -307,6 +308,8 @@ function getStakeDexo(cardanoAddress) {
 
 			stakeStars.forEach(function(star) {
 				var ownedCount = 0;
+				stars[star.star_id].selected = true;
+
 				star.planets.forEach(function(planet, index) {
 					ownedCount = planet.owned
 						? ownedCount + 1
