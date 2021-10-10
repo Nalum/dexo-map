@@ -144,9 +144,17 @@ req.addEventListener("load", function () {
 					this.remove();
 				}
 
-				if (this.star.selected || this.star.star_id === currentStar.star_id) {
-					this.setStrokeColor(violet);
+				if (this.star.selected || this.star.owned_planet || this.star.owned || this.star.star_id === currentStar.star_id) {
+					var color = this.star.owned
+						? green
+						: this.star.owned_planet
+							? cyan
+							: this.star.selected
+								? blue
+								: violet;
+					this.setStrokeColor(color);
 					this.setStrokeWidth(2);
+					this.bringToFront();
 				} else {
 					this.setStrokeWidth(0);
 				}
@@ -196,6 +204,13 @@ req.addEventListener("load", function () {
 							this.setPosition(this.planet.star.calculatePosition());
 							this.planet.item.setPosition(this.getFirstSegment().getPoint());
 							this.rotate(this.planet.rotation, this.planet.star.calculatePosition());
+
+							if (this.planet.owned || (currentPlanet && currentPlanet.planet_id === this.planet.planet_id)) {
+								this.planet.item.setStrokeColor(this.planet.owned ? green : violet);
+								this.planet.item.setStrokeWidth(2);
+							} else {
+								this.planet.item.setStrokeWidth(0);
+							}
 						}
 					}
 				};
@@ -291,7 +306,19 @@ function getStakeDexo(cardanoAddress) {
 			var stakeStars = JSON.parse(req.responseText);
 
 			stakeStars.forEach(function(star) {
-				stars[star.star_id].planets = star.planets;
+				var ownedCount = 0;
+				star.planets.forEach(function(planet, index) {
+					ownedCount = planet.owned
+						? ownedCount + 1
+						: ownedCount;
+					stars[star.star_id].planets[index].owned = planet.owned;
+					stars[star.star_id].owned = stars[star.star_id].n_planets === ownedCount
+						? true
+						: false;
+					stars[star.star_id].owned_planet = planet.owned
+						? true
+						: stars[star.star_id].owned_planet;
+				});
 
 				starSelect.childNodes.forEach(function(option){
 					if (option.value.includes("|"+star.star_id+"|")) {
