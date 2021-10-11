@@ -45,7 +45,7 @@ const positionLetter = [
 ];
 
 // Minimum Radius allowed
-const minSize = new paper.Size(3,3);
+const minSize = new paper.Size(4,4);
 // Scale will change to show zooming in/out
 const minZoom = 7e-16;
 const maxZoom = 1;
