@@ -101,21 +101,25 @@ function resetPlanetFilters() {
 }
 
 function resetFilters() {
-	resetPlanetFilters();
-	resetStarFilters();
-}
-
-function reset() {
 	document.getElementById('filter_fetch_cardano_address').value = "";
 	document.getElementById('filter_star_alpha').checked = false;
 	document.getElementById('filter_star_star').value = "--";
 	document.getElementById('filter_planet_limit_owned').checked = false;
-	galacticCenter = new paper.Point(0,0);
-	scale = minZoom;
-	resetFilters();
+	resetPlanetFilters();
+	resetStarFilters();
+}
+
+function deselectStars() {
 	Object.keys(stars).forEach(function(starID) {
 		stars[starID].selected = false;
 	});
+}
+
+function reset() {
+	galacticCenter = new paper.Point(0,0);
+	scale = minZoom;
+	resetFilters();
+	deselectStars();
 }
 
 // getParameterByName is used to set the currentStar var if either
@@ -286,7 +290,7 @@ function setPlanetInfo() {
 	document.getElementById("planet_name").innerHTML = currentStar.name + "-" + 
 		positionLetter[parseInt(currentPlanet.planetary_position.split(" ")[0])-1];
 	document.getElementById("planet_id").innerHTML = " #" + currentPlanet.planet_id;
-	document.getElementById("planet_image").src = currentPlanet.image_url.Scheme + "://" + currentPlanet.image_url.Host + currentPlanet.image_url.Path;
+	document.getElementById("planet_image").src = currentPlanet.image_url;
 	document.getElementById("planet_background_star_color").innerHTML = currentPlanet.bg_star_color;
 	document.getElementById("planet_color").innerHTML = currentPlanet.color;
 	document.getElementById("planet_composition").innerHTML = currentPlanet.composition;
@@ -311,9 +315,7 @@ function updateStarSelect() {
 	var limitOwnedSystem = document.getElementById("filter_star_limit_owned_system").checked;
 	var limitOwnedPlanets = document.getElementById("filter_planet_limit_owned").checked;
 	starSelect.value = "--";
-	Object.keys(stars).forEach(function(starID) {
-		stars[starID].selected = false;
-	});
+	deselectStars();
 
 	if (starFilterString !== "") {
 		resetPlanetFilters();
@@ -369,15 +371,15 @@ function updateStarSelect() {
 				if (innerPlanetFilterString === planetFilterString) {
 					if (limitOwnedPlanets) {
 						if (planet.owned) {
-							if (matchingStars.indexOf(planet.host_star.star_id) == -1) {
-								matchingStars.push(planet.host_star.star_id);
+							if (matchingStars.indexOf(planet.star.star_id) == -1) {
+								matchingStars.push(planet.star.star_id);
 							}
 
 							planetCount++;
 						}
 					} else {
-						if (matchingStars.indexOf(planet.host_star.star_id) == -1) {
-							matchingStars.push(planet.host_star.star_id);
+						if (matchingStars.indexOf(planet.star.star_id) == -1) {
+							matchingStars.push(planet.star.star_id);
 						}
 
 						planetCount++;
