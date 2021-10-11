@@ -279,11 +279,16 @@ function setStarSystemInfo() {
 	document.getElementById("star_region").innerHTML = currentStar.region;
 	document.getElementById("star_sector").innerHTML = currentStar.sector;
 	document.getElementById("star_spectral_type").innerHTML = currentStar.spectral_type;
-	document.getElementById("star_color").innerHTML = currentStar.color.join(", ");
 	document.getElementById("star_habitable_zone").innerHTML = currentStar.habitable_zone;
 	document.getElementById("star_longitude").innerHTML = currentStar.longitude;
 	document.getElementById("star_radial_distance").innerHTML = currentStar.radial_distance;
 	document.getElementById("star_radius").innerHTML = currentStar.radius;
+	var colorHTML = "";
+	currentStar.color.forEach(function(color) {
+		colorHTML = colorHTML + "<span><span style='background-color: "
+		+ color + "; border: 1px solid " + base2 + "; height: 10px; width: 10px;'></span>" + color + "</span>";
+	});
+	document.getElementById("star_color").innerHTML = colorHTML;
 }
 
 function setPlanetInfo() {
@@ -291,8 +296,10 @@ function setPlanetInfo() {
 		positionLetter[parseInt(currentPlanet.planetary_position.split(" ")[0])-1];
 	document.getElementById("planet_id").innerHTML = " #" + currentPlanet.planet_id;
 	document.getElementById("planet_image").src = currentPlanet.image_url;
-	document.getElementById("planet_background_star_color").innerHTML = currentPlanet.bg_star_color;
-	document.getElementById("planet_color").innerHTML = currentPlanet.color;
+	document.getElementById("planet_background_star_color").innerHTML = "<span style='background-color: "
+	+ currentPlanet.bg_star_color + "; border: 1px solid " + base2 + "; height: 10px; width: 10px;'></span>" + currentPlanet.bg_star_color;
+	document.getElementById("planet_color").innerHTML = "<span style='background-color: "
+		+ currentPlanet.color + "; border: 1px solid " + base2 + "; height: 10px; width: 10px;'></span>" + currentPlanet.color;
 	document.getElementById("planet_composition").innerHTML = currentPlanet.composition;
 	document.getElementById("planet_large_satellites").innerHTML = currentPlanet.large_satellites;
 	document.getElementById("planet_life").innerHTML = currentPlanet.life == "" ? "None" : currentPlanet.life;
