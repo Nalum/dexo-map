@@ -111,14 +111,14 @@ header {
 }
 
 main {
-	top: 126px;
+	top: 75px;
 	left: 10px;
 	width: 302px;
 }
 
 footer {
-	top: 72px;
-	left: 10px;
+	bottom: 10px;
+	right: 10px;
 	width: 400px;
 }
 
@@ -132,7 +132,10 @@ footer section {
 	padding: 5px;
 }
 
-main section button {
+/***
+ * Button styling for the site
+ */
+button {
 	background-color: #268bd2;
 	border: 4px solid #6c71c4;
 	color: #fdf6e3;
@@ -143,28 +146,28 @@ main section button {
 	width: 88px;
 }
 
-main section button:disabled {
+button:disabled {
 	background-color: #002b36 !important;
 	color: #dc322f !important;
 	cursor: wait !important;
 }
 
-main section select,
-main section input {
+select,
+input {
 	background-color: #268bd2;
 	border: 4px solid #6c71c4;
 	color: #fdf6e3;
 	font-size: 12px;
 }
 
-main section select option,
-main section input {
+select option,
+input {
 	background-color: #268bd2;
 	padding: 2px 4px;
 	margin: 2px 0px;
 }
 
-main section label {
+label {
 	margin-top: 4px;
 	display: inline-block;
 }
@@ -172,31 +175,42 @@ main section label {
 /***
  * System controls navigate around the stars 1 by 1
  */
-main section#system_controls,
-main section#planet_controls {
+section#system_controls,
+section#planet_controls {
 	background-color: rgba(7, 54, 66, .75);
-	margin-bottom: 10px;
 	padding: 5px;
+	position: absolute;
+	width: 250px;
 }
 
-main section#system_controls p,
-main section#planet_controls p {
+section#system_controls {
+	top: 10px;
+	left: 420px;
+}
+
+section#planet_controls {
+	top: 81px;
+	left: 420px;
+}
+
+section#system_controls p,
+section#planet_controls p {
 	text-align: center;
 }
 
-main section#system_controls div,
-main section#planet_controls div {
+section#system_controls div,
+section#planet_controls div {
 	margin: 0 auto;
 	width: 176px;
 }
 
-main section#system_controls div input,
-main section#planet_controls div input {
+section#system_controls div input,
+section#planet_controls div input {
 	width: 50px;
 }
 
-main section#system_controls div button,
-main section#planet_controls div button {
+section#system_controls div button,
+section#planet_controls div button {
 	width: 50px;
 }
 
@@ -211,7 +225,7 @@ main section#data section {
 	background-color: rgba(7, 54, 66, .75);
 	margin: 0;
 	padding: 5px;
-	height: 665px;
+	height: 600px;
 }
 
 main section#data span.note {
@@ -250,8 +264,13 @@ main section#data section h1 {
 	margin-bottom: 5px;
 }
 
+main section#data section#how_to div {
+	height: 522px;
+	overflow-y: scroll;
+}
+
 main section#data section#filter div {
-	height: 516px;
+	height: 452px;
 	overflow-y: scroll;
 }
 

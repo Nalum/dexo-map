@@ -22,23 +22,25 @@
 		</section>
 	</header>
 
+	<section id="system_controls">
+		<p>Switch between Star Systems</p>
+		<div>
+			<button id="previous_star" onclick="that = document.getElementById('star_system_id'); that.stepDown(); setCurrentStar(stars[that.value]); setStarSelect(that.value);">&laquo;</button>
+			<input type="number" id="star_system_id" min="1" max="2500" value="1" onchange="setCurrentStar(stars[this.value]); setStarSelect(this.value);" />
+			<button id="next_star" onclick="that = document.getElementById('star_system_id'); that.stepUp(); setCurrentStar(stars[that.value]); setStarSelect(that.value);">&raquo;</button>
+		</div>
+	</section>
+
+	<section id="planet_controls" class="hidden">
+		<p>Switch between Planets</p>
+		<div>
+			<button id="previous_planet" onclick="that = document.getElementById('planetary_position'); that.stepDown();setCurrentPlanet(that.value);">&laquo;</button>
+			<input type="number" id="planetary_position" min="0" value="0" onchange="setCurrentPlanet(this.value);" />
+			<button id="next_planet" onclick="that = document.getElementById('planetary_position'); that.stepUp();setCurrentPlanet(that.value);">&raquo;</button>
+		</div>
+	</section>
+
 	<main>
-		<section id="system_controls">
-			<p>Switch between Star Systems</p>
-			<div>
-				<button id="previous_star" onclick="that = document.getElementById('star_system_id'); that.stepDown(); setCurrentStar(stars[that.value]); setStarSelect(that.value);">&laquo;</button>
-				<input type="number" id="star_system_id" min="1" max="2500" value="1" onchange="setCurrentStar(stars[this.value]); setStarSelect(this.value);" />
-				<button id="next_star" onclick="that = document.getElementById('star_system_id'); that.stepUp(); setCurrentStar(stars[that.value]); setStarSelect(that.value);">&raquo;</button>
-			</div>
-		</section>
-		<section id="planet_controls" class="hidden">
-			<p>Switch between Planets</p>
-			<div>
-				<button id="previous_planet" onclick="that = document.getElementById('planetary_position'); that.stepDown();setCurrentPlanet(that.value);">&laquo;</button>
-				<input type="number" id="planetary_position" min="0" value="0" onchange="setCurrentPlanet(this.value);" />
-				<button id="next_planet" onclick="that = document.getElementById('planetary_position'); that.stepUp();setCurrentPlanet(that.value);">&raquo;</button>
-			</div>
-		</section>
 		<section id="data">
 			<section id="how_to">
 				<h1>HOW TO</h1>
