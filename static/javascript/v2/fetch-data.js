@@ -1,12 +1,12 @@
 // Load the Star Data
-var req = new XMLHttpRequest();
-req.overrideMimeType("application/json");
-req.open('GET', '/stars', true);
+var starsRequest = new XMLHttpRequest();
+starsRequest.overrideMimeType("application/json");
+starsRequest.open('GET', '/stars', true);
 
 // Process the Star data on successful load
-req.addEventListener("load", function () {
-	if (req.readyState == 4 && req.status == "200") {
-		stars = JSON.parse(req.responseText);
+starsRequest.addEventListener("load", function () {
+	if (starsRequest.readyState == 4 && starsRequest.status == "200") {
+		stars = JSON.parse(starsRequest.responseText);
 		var filterStarStar = document.getElementById("filter_star_star");
 		var starSystemID = document.getElementById("star_system_id");
 
@@ -125,7 +125,7 @@ req.addEventListener("load", function () {
 			// For now if you click on the star it will log the ID to the console
 			// Want to do more here with selection/info/planet display
 			star.item.onMouseUp = function() {
-				console.log(this.star.star_id);
+				setCurrentStar(this.star);
 			};
 
 			// Do more here but also need to increase the hitbox size to allow easier clicking
@@ -138,7 +138,7 @@ req.addEventListener("load", function () {
 			};
 
 			// onFrame is called 60 times a second (where possible)
-			star.item.onFrame = function(event) {
+			star.item.frameUpdate = function() {
 				// If the Star is no longer in the bounds of the canvas view let's remove it
 				if (!this.isInside(paper.view.bounds) && !drawSystem) {
 					this.remove();
@@ -163,8 +163,9 @@ req.addEventListener("load", function () {
 			// Loop over each Planet and set them up for later use
 			// Might be a better way of doing this
 			star.planets.forEach(function(planet, index) {
+				var semimajor_axis = isNaN(parseFloat(planet.semimajor_axis)) ? 0.01 : parseFloat(planet.semimajor_axis);
 				planet.star = star;
-				planet.rotation = getRandomInclusive(0.1, 1.0);
+				planet.rotation = 1 / Math.sqrt(semimajor_axis);
 
 				planet.calculateSize = function() {
 					var radius = planetSizes[this.size] * scale;
@@ -172,7 +173,6 @@ req.addEventListener("load", function () {
 				};
 
 				planet.calculatePosition = function() {
-					var semimajor_axis = isNaN(parseFloat(planet.semimajor_axis)) ? 0.01 : parseFloat(planet.semimajor_axis);
 					var pos = planet.star.calculatePosition()
 						.add(this.star.calculateSize().width/2)
 						.add(this.calculateSize().width)
@@ -250,6 +250,12 @@ req.addEventListener("load", function () {
 		// Hardcode an initial focus while working out the zoom movement issue
 		var gpStar = getParameterByName("star");
 		var gpPlanet = getParameterByName("planet");
+		var gpScale = getParameterByName("scale");
+
+		if (!isNaN(parseFloat(gpScale))) {
+			scale = parseFloat(gpScale);
+			scaleText.content = "Current Scale Kilometers 1:" + scale;
+		}
 
 		if (gpStar) {
 			setCurrentStar(stars[gpStar]);
@@ -263,7 +269,7 @@ req.addEventListener("load", function () {
 				stars[starID].planets.forEach(function(planet) {
 					if (planet.planet_id == gpPlanet) {
 						setCurrentStar(stars[starID]);
-						currentPlanet = planet;
+						setCurrentPlanet(parseInt(planet.planetary_position));
 						document.getElementById("planetary_position").value = parseInt(planet.planetary_position);
 						var pos = currentStar.calculatePosition();
 						var size = currentStar.calculateSize();
