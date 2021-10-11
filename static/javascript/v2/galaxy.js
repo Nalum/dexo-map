@@ -25,8 +25,12 @@ var systemLayer;
 var uiLayer;
 
 function setCurrentStar(star) {
+	if (currentStar) deselectStars();
+	resetFilters();
+
 	systemLayer.removeChildren();
 	currentStar = star;
+	currentStar.selected = true;
 	currentPlanet = null;
 	document.getElementById('planetary_position').value = 0;
 	document.getElementById('planetary_position').max = currentStar.planets.length;
@@ -121,6 +125,48 @@ window.addEventListener("load", function() {
 		scaleText.content = "Current Scale Kilometers 1:" + scale;
 		scaleText.addTo(uiLayer);
 
+		var targetIcon = new Group({
+			name: "TargetIcon",
+			parent: uiLayer
+		});
+		var targetIconColor = new Color(base3);
+		targetIconColor.setAlpha(0.5);
+		var targetIconCircle = new Path.Ellipse({
+			center: new Point(0,0),
+			size: new Size(25),
+			strokeWidth: 2,
+			strokeColor: targetIconColor,
+			parent: targetIcon,
+		});
+		new Path.Line({
+			from: targetIconCircle.getSegments()[0].getPoint().add(new Point(4,0)),
+			to: targetIconCircle.getSegments()[0].getPoint().add(new Point(-6,0)),
+			strokeColor: targetIconColor,
+			strokeWidth: 4,
+			parent: targetIcon
+		});
+		new Path.Line({
+			from: targetIconCircle.getSegments()[1].getPoint().add(new Point(0,4)),
+			to: targetIconCircle.getSegments()[1].getPoint().add(new Point(0,-6)),
+			strokeColor: targetIconColor,
+			strokeWidth: 4,
+			parent: targetIcon
+		});
+		new Path.Line({
+			from: targetIconCircle.getSegments()[2].getPoint().add(new Point(6,0)),
+			to: targetIconCircle.getSegments()[2].getPoint().add(new Point(-4,0)),
+			strokeColor: targetIconColor,
+			strokeWidth: 4,
+			parent: targetIcon
+		});
+		new Path.Line({
+			from: targetIconCircle.getSegments()[3].getPoint().add(new Point(0,6)),
+			to: targetIconCircle.getSegments()[3].getPoint().add(new Point(0,-4)),
+			strokeColor: targetIconColor,
+			strokeWidth: 4,
+			parent: targetIcon
+		});
+
 		view.onResize = function() {
 			view.translate(view.center.x, view.center.y);
 			scaleTextPoint = new Point(
@@ -146,15 +192,13 @@ window.addEventListener("load", function() {
 
 		view.onFrame = function(event) {
 			// If currentStar is set to a star we force galacticCenter to be offset from that point
-			if (currentStar && !dragging) {
-				galacticCenter = galacticCenter.subtract(currentStar.calculatePosition());
-			}
-
-			if (paper.project.getItem().getChildren().length === 1) {
-				drawSystem = true;
-			} else {
-				drawSystem = false;
-			}
+			galacticCenter = currentStar && !dragging
+				? galacticCenter.subtract(currentStar.calculatePosition())
+				: galacticCenter;
+			// Are we drawing a specific system?
+			drawSystem = galaxyLayer.getChildren().length === 1
+				? true
+				: false;
 
 			// Assuming we have Stars we want to have them added back into the image if they were removed
 			// due to being out of bounds.
@@ -163,11 +207,12 @@ window.addEventListener("load", function() {
 					var star = stars[starID];
 					var pos = star.calculatePosition();
 
-					if (paper.view.bounds.contains(pos) && star.item.parent === null) {
+					if (paper.view.bounds.contains(pos) && !star.item.parent) {
 						star.calculateSize();
 						star.item.addTo(galaxyLayer);
 					}
 
+					star.item.frameUpdate();
 					stars[starID] = star;
 				});
 
@@ -186,16 +231,11 @@ window.addEventListener("load", function() {
 				});
 			}
 
-			if (currentPlanet && !dragging) {
-				galacticCenter = galacticCenter.subtract(currentPlanet.orbit.getFirstSegment().getPoint());
-			}
-
-			scaleText.content = "Current Scale Kilometers 1:" + scale;
-			scaleTextPoint = new Point(
-				view.getBounds().x + 15 + scaleText.getBounds().getSize().width/2,
-				view.getBounds().y + view.getBounds().height - 15
-			);
-			scaleText.setPosition(scaleTextPoint);
+			// Align the canvas center with the currentPlanet if set
+			galacticCenter = currentPlanet && drawSystem && !dragging
+				? galacticCenter.subtract(currentPlanet.orbit.getFirstSegment().getPoint())
+				: galacticCenter;
+			targetIcon.rotate(10);
 		}
 	}
 
@@ -209,8 +249,8 @@ window.addEventListener("load", function() {
 
 		// Are we zooming in or out?
 		scale += delta >= 0
-			? scale/2
-			: -scale/2;
+			? scale / 2
+			: -scale / 2;
 
 		// Check if we're between min and max zoom levels
 		scale = scale >= maxZoom
@@ -219,12 +259,17 @@ window.addEventListener("load", function() {
 				? minZoom
 				: scale;
 
+		// Update scaleText with new scale value
+		scaleText.content = "Current Scale Kilometers 1:" + scale;
+
 		// Stop the default action of scrolling from happening
 		return evt.preventDefault() && false;
 	};
 
+	// Add handleScroll to the mouse scroll events
 	galaxy.addEventListener("DOMMouseScroll", handleScroll, false);
 	galaxy.addEventListener("mousewheel", handleScroll, false);
 
-	req.send(null);
+	// Send the request to get all the Star information
+	starsRequest.send(null);
 });
