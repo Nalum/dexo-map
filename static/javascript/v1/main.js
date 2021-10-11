@@ -798,22 +798,22 @@ function generateStarFilterString(star) {
 
 function starColor(color, alpha) {
 	switch (color) {
-		case "blue":
+		case "#0000FF":
 			return "rgba(38, 139, 210, " + alpha + ")";
 			break;
-		case "blue_white":
+		case "#0000FF_#FFFFFF":
 			return "rgba(42, 161, 152, " + alpha + ")";
 			break;
-		case "light_orange":
+		case "#FF6347":
 			return "rgba(203, 75, 22, " + alpha + ")";
 			break;
-			case "orange_red":
+		case "#FFA500_#FF0000":
 			return "rgba(220, 50, 47, " + alpha + ")";
 			break;
-		case "yellow":
+		case "#FFFF00":
 			return "rgba(181, 137, 0, " + alpha + ")";
 			break;
-		case "yellow_white":
+		case "#FFFF00_#FFFFFF":
 			return "rgba(201, 157, 20, " + alpha + ")";
 			break;
 		default:
