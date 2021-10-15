@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/gobuffalo/packr/v2"
@@ -24,9 +25,9 @@ func Static(box *packr.Box) func(http.ResponseWriter, *http.Request, httprouter.
 
 			mtype := mimetype.Detect(file)
 
-			if params.ByName("file") == "/css/main.css" {
+			if strings.HasSuffix(params.ByName("file"), ".css") {
 				w.Header().Add("content-type", "text/css")
-			} else if params.ByName("file") == "/javascript/main.js" {
+			} else if strings.HasSuffix(params.ByName("file"), ".js") {
 				w.Header().Add("content-type", "text/javascript")
 			} else {
 				w.Header().Add("content-type", mtype.String())

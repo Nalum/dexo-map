@@ -1,0 +1,200 @@
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"os"
+	"strings"
+
+	"github.com/gobuffalo/packr/v2"
+	"github.com/nalum/dexo-map/pkg/dexo"
+)
+
+type Breakdown struct {
+	Count           int     `json:"count"`
+	PropertyPercent float64 `json:"property-percent"`
+	GalacticPercent float64 `json:"galactic-percent"`
+	OwnedIDs        []int   `json:"owned-ids"`
+	PlantIDs        []int   `json:"planet-ids"`
+}
+
+func (b Breakdown) String() string {
+	return fmt.Sprintf("%d / %.4f%% (%.4f%%) / %v", b.Count, b.PropertyPercent*100, b.GalacticPercent*100, b.OwnedIDs)
+}
+
+var myPlanets = []int{
+	1390, 180, 23, 4314, 5430, 5477, 6250, 6636, 7412,
+	9132, 10575, 10693, 10802, 1579, 3359, 3475, 413,
+	4990, 6007, 6537, 1503, 1786, 2257, 2295, 2673,
+	3472, 3624, 5948, 7626, 7657, 7557, 72, 2876,
+	6869, 2637, 4561, 10518, 7598, 10723, 418,
+}
+
+func main() {
+	static := packr.New("static", "./static")
+	data(static)
+}
+
+func data(box *packr.Box) {
+	data, err := box.Find("planets_metadata.json")
+
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	planets := []dexo.Planet{}
+	starMap := map[int]dexo.Star{}
+	err = json.Unmarshal(data, &planets)
+
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	for _, planet := range planets {
+		if _, ok := starMap[planet.HostStar.ID]; !ok {
+			star := planet.HostStar
+			star.Planets = append(star.Planets, planet)
+			starMap[star.ID] = star
+		} else {
+			star := starMap[planet.HostStar.ID]
+			star.Planets = append(star.Planets, planet)
+			starMap[star.ID] = star
+		}
+	}
+
+	fmt.Println(starMap)
+	starJSON, _ := json.Marshal(starMap)
+	os.WriteFile("./static/stars.json", starJSON, 0666)
+
+	fmt.Println(len(planets))
+	fmt.Println(len(starMap))
+	var furthestStar *dexo.Star
+	var closestStar *dexo.Star
+	distinctColorStars := map[string]int{}
+
+	for _, star := range starMap {
+		if furthestStar == nil || closestStar == nil {
+			furthestStar = &star
+			closestStar = &star
+		}
+
+		if star.RadialDistance > furthestStar.RadialDistance {
+			furthestStar = &star
+		}
+
+		if star.RadialDistance < closestStar.RadialDistance {
+			closestStar = &star
+		}
+
+		distinctColorStars[star.Color.String()] += 1
+	}
+
+	fmt.Printf("Name: %s (%d) \nDistance: %s\n", furthestStar.Name, furthestStar.ID, furthestStar.RadialDistance)
+	fmt.Printf("Name: %s (%d) \nDistance: %s\n", closestStar.Name, closestStar.ID, closestStar.RadialDistance)
+	fmt.Println(distinctColorStars)
+
+	propertyGroups := map[string]map[string]*Breakdown{
+		"colorComposition":     {},
+		"colorCompositionLife": {},
+		"sizeColorRingsStars":  {},
+	}
+	ccCount := 0
+	cclCount := 0
+	scrsCount := 0
+
+	for _, planet := range planets {
+		props := fmt.Sprintf("%s - %s", planet.Color, planet.Composition)
+		ccCount++
+
+		if _, ok := propertyGroups["colorComposition"][props]; !ok {
+			propertyGroups["colorComposition"][props] = &Breakdown{}
+		}
+
+		bd := propertyGroups["colorComposition"][props]
+		bd.Count += 1
+		bd.PlantIDs = append(bd.PlantIDs, planet.ID)
+
+		for _, id := range myPlanets {
+			if id == planet.ID {
+				bd.OwnedIDs = append(bd.OwnedIDs, id)
+			}
+		}
+	}
+
+	for _, planet := range planets {
+		if planet.Life != "" {
+			props := fmt.Sprintf("%s - %s - %s", planet.Color, planet.Composition, planet.Life)
+			cclCount++
+
+			if _, ok := propertyGroups["colorCompositionLife"][props]; !ok {
+				propertyGroups["colorCompositionLife"][props] = &Breakdown{}
+			}
+
+			bd := propertyGroups["colorCompositionLife"][props]
+			bd.Count += 1
+			bd.PlantIDs = append(bd.PlantIDs, planet.ID)
+
+			for _, id := range myPlanets {
+				if id == planet.ID {
+					bd.OwnedIDs = append(bd.OwnedIDs, id)
+				}
+			}
+		}
+	}
+
+	for _, planet := range planets {
+		if planet.Rings != "" {
+			props := fmt.Sprintf("%s - %s - %s - %s", planet.Size, planet.Color, planet.Rings, planet.BackgroundStarColor)
+			scrsCount++
+
+			if _, ok := propertyGroups["sizeColorRingsStars"][props]; !ok {
+				propertyGroups["sizeColorRingsStars"][props] = &Breakdown{}
+			}
+
+			bd := propertyGroups["sizeColorRingsStars"][props]
+			bd.Count += 1
+			bd.PlantIDs = append(bd.PlantIDs, planet.ID)
+
+			for _, id := range myPlanets {
+				if id == planet.ID {
+					bd.OwnedIDs = append(bd.OwnedIDs, id)
+				}
+			}
+		}
+	}
+
+	fmt.Println("")
+	fmt.Println("Properties: Colour and Composition")
+
+	for key, value := range propertyGroups["colorComposition"] {
+		if value.OwnedIDs != nil {
+			value.PropertyPercent = float64(value.Count) / float64(ccCount)
+			value.GalacticPercent = float64(value.Count) / float64(len(planets))
+			fmt.Printf("%s : %s\n", key, value)
+		}
+	}
+
+	fmt.Println("")
+	fmt.Println("Properties: Colour, Composition and Life")
+
+	for key, value := range propertyGroups["colorCompositionLife"] {
+		if value.OwnedIDs != nil {
+			value.PropertyPercent = float64(value.Count) / float64(cclCount)
+			value.GalacticPercent = float64(value.Count) / float64(len(planets))
+			fmt.Printf("%s : %s\n", key, value)
+		}
+	}
+
+	fmt.Println("")
+	fmt.Println("Properties: Size, Color, Rings and BackgroundStarColor")
+
+	for key, value := range propertyGroups["sizeColorRingsStars"] {
+		if (strings.HasPrefix(key, "S") || strings.HasPrefix(key, "XS")) && value.Count == 1 {
+			value.PropertyPercent = float64(value.Count) / float64(cclCount)
+			value.GalacticPercent = float64(value.Count) / float64(len(planets))
+			fmt.Printf("%s : %s\n", key, value)
+		}
+	}
+}
