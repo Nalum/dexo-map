@@ -15,7 +15,7 @@ jobs:
       uses: actions/setup-go@v2
       with:
         go-version: ${{ matrix.go }}
-    - run: go install github.com/gobuffalo/packr@v2
+    - run: go install github.com/gobuffalo/packr/v2
     - run: packr2
     - run: go build -o ./bin/dexo-map
     - run: packr2 clean
