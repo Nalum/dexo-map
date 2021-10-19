@@ -3,8 +3,9 @@ export CGO_ENABLED=0
 export BLOCKFROST_KEY?=...
 
 build: clean
-	@packr2 build -o ./bin/dexo-map
-	@rm -rf packrd main-packr.go dexo-map
+	@packr2
+	@go build -o ./bin/dexo-map
+	@packr2 clean
 
 run:
 	@go build -o ./bin/dexo-map
