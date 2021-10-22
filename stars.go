@@ -1,20 +1,20 @@
 package main
 
 import (
+	"embed"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"strconv"
 
-	"github.com/gobuffalo/packr/v2"
 	"github.com/julienschmidt/httprouter"
 )
 
-func Stars(box *packr.Box) func(http.ResponseWriter, *http.Request, httprouter.Params) {
+func Stars(files embed.FS) func(http.ResponseWriter, *http.Request, httprouter.Params) {
 	return func(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 		log.Println("Stars Function Requested")
-		file, err := box.Find("json/stars.json")
+		file, err := files.ReadFile("static/json/stars.json")
 
 		if err != nil {
 			log.Println(err)
