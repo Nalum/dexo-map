@@ -1,18 +1,18 @@
 package main
 
 import (
+	"embed"
 	"fmt"
 	"log"
 	"net/http"
 
-	"github.com/gobuffalo/packr/v2"
 	"github.com/julienschmidt/httprouter"
 )
 
-func IndexV1(box *packr.Box) func(http.ResponseWriter, *http.Request, httprouter.Params) {
+func IndexV1(files embed.FS) func(http.ResponseWriter, *http.Request, httprouter.Params) {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		log.Println("Index Function Requested")
-		file, err := box.Find("html/v1/index.html")
+		file, err := files.ReadFile("static/html/v1/index.html")
 
 		if err != nil {
 			log.Println(err)
@@ -26,10 +26,10 @@ func IndexV1(box *packr.Box) func(http.ResponseWriter, *http.Request, httprouter
 	}
 }
 
-func IndexV2(box *packr.Box) func(http.ResponseWriter, *http.Request, httprouter.Params) {
+func IndexV2(files embed.FS) func(http.ResponseWriter, *http.Request, httprouter.Params) {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		log.Println("Index Function Requested")
-		file, err := box.Find("html/v2/index.html")
+		file, err := files.ReadFile("static/html/v2/index.html")
 
 		if err != nil {
 			log.Println(err)

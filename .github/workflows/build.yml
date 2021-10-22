@@ -1,0 +1,18 @@
+name: Build Go
+on: 
+  pull_request:
+    branches: [main]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go: [ '1.17', '1.16' ]
+    name: Go ${{ matrix.go }}
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup go
+      uses: actions/setup-go@v2
+      with:
+        go-version: ${{ matrix.go }}
+    - run: go build -o ./bin/dexo-map

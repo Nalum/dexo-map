@@ -1,20 +1,21 @@
 package main
 
 import (
+	"embed"
 	"flag"
 	"log"
 	"net/http"
 
-	"github.com/gobuffalo/packr/v2"
 	"github.com/julienschmidt/httprouter"
 )
+
+//go:embed static/*
+var static embed.FS
 
 func main() {
 	var bfKey string
 	flag.StringVar(&bfKey, "blockfrost-key", "", "The API Key required to interact with the Blockfrost API.")
 	flag.Parse()
-
-	static := packr.New("static", "./static")
 
 	router := httprouter.New()
 	router.GET("/", IndexV2(static))

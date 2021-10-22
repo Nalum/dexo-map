@@ -1,6 +1,7 @@
 package main
 
 import (
+	"embed"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -8,7 +9,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gobuffalo/packr/v2"
 	"github.com/julienschmidt/httprouter"
 )
 
@@ -29,7 +29,7 @@ var client = &http.Client{}
 var stakeAddrs = map[string]Cache{}
 var addrToStake = map[string]string{}
 
-func Stake(bfKey string, box *packr.Box) func(http.ResponseWriter, *http.Request, httprouter.Params) {
+func Stake(bfKey string, files embed.FS) func(http.ResponseWriter, *http.Request, httprouter.Params) {
 	return func(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 		log.Println("Stake Function Requested")
 		stake := params.ByName("stake")
@@ -126,7 +126,7 @@ func Stake(bfKey string, box *packr.Box) func(http.ResponseWriter, *http.Request
 					page++
 				}
 
-				file, err := box.Find("json/stars.json")
+				file, err := files.ReadFile("static/json/stars.json")
 
 				if err != nil {
 					log.Println(err)
