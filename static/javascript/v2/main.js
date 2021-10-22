@@ -102,8 +102,9 @@ function resetPlanetFilters() {
 
 function resetFilters() {
 	document.getElementById('filter_fetch_cardano_address').value = "";
-	document.getElementById('filter_star_alpha').checked = false;
 	document.getElementById('filter_star_star').value = "--";
+	document.getElementById("filter_star_limit_owned_in_system").checked = false;
+	document.getElementById("filter_star_limit_owned_system").checked = false;
 	document.getElementById('filter_planet_limit_owned').checked = false;
 	resetPlanetFilters();
 	resetStarFilters();

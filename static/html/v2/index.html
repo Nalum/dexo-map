@@ -83,12 +83,6 @@
 				</div>
 				<h1 id="filter_star_header" onclick="showHideFilters(this);" data-target="filter_star"><span class="icon rotate">&raquo;</span> HOST STARS <span class="icon rotate">&raquo;</span></h1>
 				<div id="filter_star_container" class="hidden">
-					<input type="checkbox" id="filter_star_labels" name="filter_star_labels" />
-					<label for="filter_star_labels">Show Labels</label>
-					<br />
-					<input type="checkbox" id="filter_star_alpha" name="filter_star_alpha" />
-					<label for="filter_star_alpha">Enable Luminosity</label>
-					<br />
 					<input type="checkbox" id="filter_star_limit_owned_in_system" name="filter_star_limit_owned_in_system" onclick="document.getElementById('filter_star_limit_owned_system').checked=false; updateStarSelect();" />
 					<label for="filter_star_limit_owned_in_system">Limit Owned In System</label>
 					<br />
@@ -225,6 +219,8 @@
 			<p>
 				If you have any issues or requests please add an issue to the
 				<a href="https://github.com/nalum/dexo-map" target="_blank">Github Repo</a>, thank you.
+				<br />
+				Version: {VERSION}
 			</p>
 		</section>
 	</footer>
