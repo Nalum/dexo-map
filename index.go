@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/julienschmidt/httprouter"
 )
@@ -39,6 +40,8 @@ func IndexV2(files embed.FS) func(http.ResponseWriter, *http.Request, httprouter
 		w.Header().Add("content-type", "text/html")
 		w.Header().Add("cache-control", "public")
 		w.Header().Add("cache-control", "max-age=300")
-		fmt.Fprintf(w, "%s", file)
+		response := string(file)
+		response = strings.Replace(response, "{VERSION}", VERSION, 1)
+		fmt.Fprintf(w, "%s", response)
 	}
 }

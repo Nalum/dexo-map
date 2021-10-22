@@ -11,6 +11,7 @@ import (
 
 //go:embed static/*
 var static embed.FS
+var VERSION = "0.2.0"
 
 func main() {
 	var bfKey string
