@@ -3,7 +3,7 @@
 This project is using data provided by the creator of [DexoWorlds](https://dexoworlds.com) to allow exploring the Galaxy
 Veran Way.
 
-ADA Address: [`addr1qywqmlh8m5kenkgx43075pf2gslp09fc9smkp0f5u507zmqm9ajsamy75llqkcdshhh4apqgnvvzmsswkqrpk2nf0ncsdtj4ay`](./ada-address.pdf)
+ADA Address: [`addr1qx9yadwk7dx37e49p4qyzrhaza5zfnps432eauctxqjjugcm9ajsamy75llqkcdshhh4apqgnvvzmsswkqrpk2nf0ncs3522g9`](./ada-address.pdf)
 
 The below information is taken from [DexoWorlds](https://dexoworlds.com)
 
