@@ -1,0 +1,11 @@
+[Unit]
+Description=dexo-map
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5s
+ExecStart=/usr/bin/dexo-map -blockfrost-key ${BLOCKFROST_KEY}
+
+[Install]
+WantedBy=multi-user.target
