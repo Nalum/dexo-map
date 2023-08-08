@@ -19,7 +19,7 @@ func main() {
 	flag.Parse()
 
 	router := httprouter.New()
-	router.GET("/", IndexV2(static))
+	router.GET("/", IndexV3(static))
 	router.GET("/v1", IndexV1(static))
 	router.GET("/v2", IndexV2(static))
 	router.GET("/v3", IndexV3(static))
